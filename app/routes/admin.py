@@ -1,0 +1,282 @@
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask_login import login_required, current_user
+from app.models.topic import TopicModel
+from app.models.section import SectionModel
+from app.models.section_item import SectionItemModel
+
+admin_bp = Blueprint('admin', __name__)
+
+def admin_required(f):
+    from functools import wraps
+    @wraps(f)
+    @login_required
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_admin:
+            flash('Admin access required.', 'error')
+            return redirect(url_for('home.index'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+# ------------------------------------------- #
+# ---------------- DASHBOARD ---------------- #
+# ------------------------------------------- #
+
+@admin_bp.route('/')
+@admin_required
+def dashboard():
+    topic_model = TopicModel()
+    topics = topic_model.get_all()
+    return render_template('admin/dashboard.html', topics=topics)
+
+
+# ------------------------------------------- #
+# ----------------- TOPICS ------------------ #
+# ------------------------------------------- #
+
+# --------- NEW TOPIC --------- #
+@admin_bp.route('/topic/new', methods=['GET', 'POST'])
+@admin_required
+def new_topic():
+    if request.method == 'POST':
+        slug = request.form.get('slug')
+        title = request.form.get('title')
+        description = request.form.get('description')
+        category = request.form.get('category', 'General')
+        is_published = 'is_published' in request.form
+        
+        if not slug or not title:
+            flash('Slug and title are required', 'error')
+            return render_template('admin/edit_topic.html')
+        
+        topic_model = TopicModel()
+        topic_id = topic_model.create_topic(slug, title, description, current_user.id, category, is_published)
+        
+        if topic_id:
+            flash('Topic created successfully!', 'success')
+            return redirect(url_for('admin.dashboard'))
+        else:
+            flash('Error creating topic. Slug might already exist.', 'error')
+    
+    return render_template('admin/edit_topic.html')
+
+
+# -------- EDIT TOPIC -------- #
+@admin_bp.route('/topic/<int:topic_id>/edit', methods=['GET', 'POST'])
+@admin_required
+def edit_topic(topic_id):
+    topic_model = TopicModel()
+    topic = topic_model.get_by_id(topic_id)
+    
+    if not topic:
+        flash('Topic not found', 'error')
+        return redirect(url_for('admin.dashboard'))
+    
+    if request.method == 'POST':
+        slug = request.form.get('slug')
+        title = request.form.get('title')
+        description = request.form.get('description')
+        category = request.form.get('category', 'General')
+        is_published = 'is_published' in request.form
+        
+        if topic_model.update_topic(topic_id, slug, title, description, category, is_published):
+            flash('Topic updated successfully!', 'success')
+            return redirect(url_for('admin.dashboard'))
+        else:
+            flash('Error updating topic', 'error')
+    
+    return render_template('admin/edit_topic.html', topic=topic)
+
+# -------- DELETE TOPIC -------- #
+@admin_bp.route('/topic/<int:topic_id>/delete')
+@admin_required
+def delete_topic(topic_id):
+    topic_model = TopicModel()
+    if topic_model.delete_topic(topic_id):
+        flash('Topic deleted successfully!', 'success')
+    else:
+        flash('Error deleting topic', 'error')
+    
+    return redirect(url_for('admin.dashboard'))
+
+
+# ------------------------------------------- #
+# ---------------- SECTIONS ----------------- #
+# ------------------------------------------- #
+
+# ------- MANAGE SECTIONS ------- #
+@admin_bp.route('/topic/<int:topic_id>/sections')
+@admin_required
+def manage_sections(topic_id):
+    topic_model = TopicModel()
+    section_model = SectionModel()
+    item_model = SectionItemModel()
+    
+    topic = topic_model.get_by_id(topic_id)
+    if not topic:
+        flash('Topic not found', 'error')
+        return redirect(url_for('admin.dashboard'))
+    
+    sections = section_model.get_by_topic(topic_id)
+    
+    for section in sections:
+        section.items = item_model.get_by_section(section.id)
+    
+    return render_template('admin/manage_sections.html', topic=topic, sections=sections)
+
+# --------- NEW SECTION --------- #
+@admin_bp.route('/api/section/new', methods=['POST'])
+@admin_required
+def api_new_section():
+    topic_id = request.json.get('topic_id')
+    title = request.json.get('title')
+    
+    section_model = SectionModel()
+    section_id = section_model.create_section(title, topic_id)
+    
+    if section_id:
+        return jsonify({'success': True, 'section_id': section_id})
+    else:
+        return jsonify({'success': False, 'error': 'Failed to create section'})
+
+
+# -------- SECTION UPDATE -------- #
+@admin_bp.route('/api/section/update', methods=['POST'])
+@admin_required
+def api_update_section():
+    section_id = request.json.get('section_id')
+    title = request.json.get('title')
+    display_order = request.json.get('display_order', 0)
+    
+    section_model = SectionModel()
+    if section_model.update_section(section_id, title, display_order):
+        return jsonify({'success': True})
+    else:
+        return jsonify({'success': False, 'error': 'Failed to update section'})
+
+# -------- SECTION DELETE -------- #
+@admin_bp.route('/api/section/delete', methods=['POST'])
+@admin_required
+def api_delete_section():
+    section_id = request.json.get('section_id')
+    
+    section_model = SectionModel()
+    if section_model.delete_section(section_id):
+        return jsonify({'success': True})
+    else:
+        return jsonify({'success': False, 'error': 'Failed to delete section'})
+
+# ------------------------------------------- #
+# ------------------ ITEMS ------------------ #
+# ------------------------------------------- #
+
+# -------- NEW ITEM (QUICK)  -------- #
+@admin_bp.route('/api/item/new', methods=['POST'])
+@admin_required
+def api_new_item():
+    section_id = request.json.get('section_id')
+    title = request.json.get('title')
+    item_type = request.json.get('type', 'default')
+    
+    item_model = SectionItemModel()
+    item_id = item_model.create_item(title, section_id, item_type=item_type)
+    
+    if item_id:
+        return jsonify({'success': True, 'item_id': item_id})
+    else:
+        return jsonify({'success': False, 'error': 'Failed to create item'})
+    
+# -------- NEW ITEM  -------- #
+@admin_bp.route('/section/<int:section_id>/item/new', methods=['GET', 'POST'])
+@admin_required
+def new_item(section_id):
+    section_model = SectionModel()
+    section = section_model.get_by_id(section_id)
+    
+    if not section:
+        flash('Section not found', 'error')
+        return redirect(url_for('admin.dashboard'))
+    
+    if request.method == 'POST':
+        title = request.form.get('title')
+        description = request.form.get('description')
+        url = request.form.get('url')
+        code = request.form.get('code')
+        item_type = request.form.get('item_type', 'default')
+        
+        if not title:
+            flash('Title is required', 'error')
+            return render_template('admin/edit_item.html', section=section)
+        
+        item_model = SectionItemModel()
+        item_id = item_model.create_item(
+            title=title,
+            section_id=section_id,
+            description=description,
+            url=url,
+            code=code,
+            item_type=item_type
+        )
+        
+        if item_id:
+            flash('Item created successfully!', 'success')
+            return redirect(url_for('admin.manage_sections', topic_id=section.topic_id))
+        else:
+            flash('Error creating item', 'error')
+    
+    return render_template('admin/edit_item.html', section=section)
+
+
+# ------- EDIT ITEM  ------- #
+@admin_bp.route('/item/<int:item_id>/edit', methods=['GET', 'POST'])
+@admin_required
+def edit_item(item_id):
+    item_model = SectionItemModel()
+    section_model = SectionModel()
+    
+    item = item_model.get_by_id(item_id)
+    if not item:
+        flash('Item not found', 'error')
+        return redirect(url_for('admin.dashboard'))
+    
+    section = section_model.get_by_id(item.section_id)
+    
+    if request.method == 'POST':
+        title = request.form.get('title')
+        description = request.form.get('description')
+        url = request.form.get('url')
+        code = request.form.get('code')
+        item_type = request.form.get('item_type', 'default')
+        
+        if not title:
+            flash('Title is required', 'error')
+            return render_template('admin/edit_item.html', section=section, item=item)
+        
+        if item_model.update_item(item_id, title, description, url, code, item_type, item.display_order):
+            flash('Item updated successfully!', 'success')
+            return redirect(url_for('admin.manage_sections', topic_id=section.topic_id))
+        else:
+            flash('Error updating item', 'error')
+    
+    return render_template('admin/edit_item.html', section=section, item=item)
+
+# -------- DELETE ITEM  -------- #
+@admin_bp.route('/item/<int:item_id>/delete')
+@admin_required
+def delete_item(item_id):
+    item_model = SectionItemModel()
+    section_model = SectionModel()
+    
+    item = item_model.get_by_id(item_id)
+    if not item:
+        flash('Item not found', 'error')
+        return redirect(url_for('admin.dashboard'))
+    
+    section = section_model.get_by_id(item.section_id)
+    
+    if item_model.delete_item(item_id):
+        flash('Item deleted successfully!', 'success')
+    else:
+        flash('Error deleting item', 'error')
+    
+    return redirect(url_for('admin.manage_sections', topic_id=section.topic_id))

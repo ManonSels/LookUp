@@ -1,0 +1,236 @@
+{% extends "layout.html" %}
+
+{% block title %}Manage Sections - {{ topic.title }}{% endblock %}
+
+{% block content %}
+<!-- Add this hidden div to store the topic ID -->
+<div id="topic-data" data-topic-id="{{ topic.id }}" style="display: none;"></div>
+
+<div class="admin-header">
+    <h1>Manage Sections: {{ topic.title }}</h1>
+    <div>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+        <button id="add-section-btn" class="btn btn-primary">Add Section</button>
+    </div>
+</div>
+
+<div class="sections-list">
+    {% for section in sections %}
+    <div class="section-card" data-section-id="{{ section.id }}">
+        <div class="section-header">
+            <h3>{{ section.title }}</h3>
+            <div class="section-actions">
+                <button class="btn btn-secondary add-item-btn" data-section-id="{{ section.id }}">Add Item</button>
+                <button class="btn btn-secondary edit-section-btn" data-section-id="{{ section.id }}">Edit</button>
+                <button class="btn btn-danger delete-section-btn" data-section-id="{{ section.id }}">Delete</button>
+            </div>
+        </div>
+        
+        <!-- Items for this section -->
+        <div class="items-list">
+            {% if section.items %}
+                <div class="items-header">
+                    <h4>Items ({{ section.items|length }})</h4>
+                </div>
+                {% for item in section.items %}
+                <div class="item-card" data-item-id="{{ item.id }}">
+                    <div class="item-header">
+                        <div class="item-title">
+                            <h5>{{ item.title }}</h5>
+                            <span class="item-type {{ item.item_type }}">{{ item.item_type }}</span>
+                        </div>
+                        <div class="item-actions">
+                            <a href="{{ url_for('admin.edit_item', item_id=item.id) }}" class="btn btn-sm btn-secondary">Edit</a>
+                            <a href="{{ url_for('admin.delete_item', item_id=item.id) }}" 
+                               class="btn btn-sm btn-danger" 
+                               onclick="return confirm('Delete this item?')">Delete</a>
+                        </div>
+                    </div>
+                    
+                    {% if item.description %}
+                    <p class="item-description">{{ item.description }}</p>
+                    {% endif %}
+                    
+                    {% if item.url %}
+                    <div class="item-url">
+                        <a href="{{ item.url }}" target="_blank" class="card-link">{{ item.url }}</a>
+                    </div>
+                    {% endif %}
+                    
+                    {% if item.code %}
+                    <div class="item-code">
+                        <pre><code>{{ item.code }}</code></pre>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="empty-items">
+                <p>No items in this section yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <!-- This else block is for when there are NO sections at all -->
+    <div class="empty-state">
+        <h2>No sections yet</h2>
+        <p>Add your first section to start building this cheat sheet.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get topic ID from data attribute
+    const topicIdElement = document.getElementById('topic-data');
+    const topicId = topicIdElement ? topicIdElement.getAttribute('data-topic-id') : null;
+    
+    if (!topicId) {
+        console.error('Topic ID not found');
+        return;
+    }
+
+    // Add Section
+    const addSectionBtn = document.getElementById('add-section-btn');
+    if (addSectionBtn) {
+        addSectionBtn.addEventListener('click', function() {
+            const title = prompt('Enter section title:');
+            if (title && title.trim()) {
+                fetch("{{ url_for('admin.api_new_section') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        topic_id: parseInt(topicId),
+                        title: title.trim()
+                    })
+                })
+                .then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(function(data) {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error creating section: ' + (data.error || 'Unknown error'));
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                    alert('Error creating section. Please check the console for details.');
+                });
+            }
+        });
+    }
+
+    // Add Item to Section - Redirect to form page
+    var addItemButtons = document.querySelectorAll('.add-item-btn');
+    addItemButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            var sectionId = this.getAttribute('data-section-id');
+            window.location.href = "{{ url_for('admin.new_item', section_id=0) }}".replace('0', sectionId);
+        });
+    });
+
+    // Edit Section (Fully implemented)
+    var editButtons = document.querySelectorAll('.edit-section-btn');
+    editButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            var sectionId = this.getAttribute('data-section-id');
+            var sectionCard = this.closest('.section-card');
+            var currentTitle = sectionCard.querySelector('h3').textContent;
+            var newTitle = prompt('Edit section title:', currentTitle);
+            
+            if (newTitle && newTitle.trim() && newTitle !== currentTitle) {
+                fetch("{{ url_for('admin.api_update_section') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        section_id: parseInt(sectionId),
+                        title: newTitle.trim(),
+                        display_order: 0
+                    })
+                })
+                .then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(function(data) {
+                    if (data.success) {
+                        sectionCard.querySelector('h3').textContent = newTitle.trim();
+                        alert('Section updated successfully!');
+                    } else {
+                        alert('Error updating section: ' + (data.error || 'Unknown error'));
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                    alert('Error updating section. Please check the console for details.');
+                });
+            }
+        });
+    });
+
+    // Delete Section (Fully implemented)
+    var deleteButtons = document.querySelectorAll('.delete-section-btn');
+    deleteButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            var sectionId = this.getAttribute('data-section-id');
+            var sectionCard = this.closest('.section-card');
+            var sectionTitle = sectionCard.querySelector('h3').textContent;
+            
+            if (confirm('Are you sure you want to delete the section "' + sectionTitle + '" and all its items? This action cannot be undone.')) {
+                fetch("{{ url_for('admin.api_delete_section') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        section_id: parseInt(sectionId)
+                    })
+                })
+                .then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(function(data) {
+                    if (data.success) {
+                        sectionCard.remove();
+                        
+                        var sectionsList = document.querySelector('.sections-list');
+                        var remainingSections = sectionsList.querySelectorAll('.section-card');
+                        if (remainingSections.length === 0) {
+                            sectionsList.innerHTML = `
+                                <div class="empty-state">
+                                    <h2>No sections yet</h2>
+                                    <p>Add your first section to start building this cheat sheet.</p>
+                                </div>
+                            `;
+                        }
+                        
+                        alert('Section deleted successfully!');
+                    } else {
+                        alert('Error deleting section: ' + (data.error || 'Unknown error'));
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                    alert('Error deleting section. Please check the console for details.');
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

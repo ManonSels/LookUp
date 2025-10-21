@@ -1,0 +1,824 @@
+/* ------------------------------------------- */
+/* ------------------ RESET ------------------ */
+/* ------------------------------------------- */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    line-height: 1.6;
+    color: #2d3748;
+    background-color: #f7fafc;
+    padding: 0;
+    margin: 0;
+}
+
+/* ------------------------------------------- */
+/* --------------- NAVIGATION ---------------- */
+/* ------------------------------------------- */
+
+.navbar {
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+}
+
+.nav-logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-decoration: none;
+    color: #2d3748;
+}
+
+.nav-logo:hover {
+    color: #4a5568;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: #4a5568;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.nav-link:hover {
+    color: #2b6cb0;
+}
+
+
+/* ------------------------------------------- */
+/* -------------- MAIN CONTENT --------------- */
+/* ------------------------------------------- */
+
+.main-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    min-height: calc(100vh - 80px);
+}
+
+
+/* ------------------------------------------- */
+/* ------------ CATEGORY SECTIONS ------------ */
+/* ------------------------------------------- */
+
+.category-section {
+    margin-bottom: 3rem;
+}
+
+.category-header {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.category-section .topics-grid {
+    margin-top: 0;
+}
+
+
+/* ------------------------------------------- */
+/* -------------- HERO SECTION --------------- */
+/* ------------------------------------------- */
+
+.hero {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 2rem 0;
+}
+
+.hero h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #1a202c;
+}
+
+.hero p {
+    font-size: 1.25rem;
+    color: #718096;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+
+/* ------------------------------------------- */
+/* --------------- TOPICS GRID --------------- */
+/* ------------------------------------------- */
+
+.topics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.topic-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.topic-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-color: #cbd5e0;
+}
+
+.topic-card h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #2d3748;
+}
+
+.topic-card p {
+    color: #718096;
+    margin: 0;
+}
+
+
+/* ------------------------------------------- */
+/* ------------ ADMIN TOPIC CARDS ------------ */
+/* ------------------------------------------- */
+
+.topic-card.admin {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.topic-info h3 {
+    margin-bottom: 0.5rem;
+}
+
+.topic-meta {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.slug {
+    color: #718096;
+    background: #f7fafc;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+.category {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    text-decoration: underline 3px yellow;
+}
+
+.status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status.published {
+    background: #c6f6d5;
+    color: #22543d;
+}
+
+.status.draft {
+    background: #fed7d7;
+    color: #742a2a;
+}
+
+.topic-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+
+/* ------------------------------------------- */
+/* ------------- MANAGE SECTIONS ------------- */
+/* ------------------------------------------- */
+
+.section-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.section-header h3 {
+    margin: 0;
+    color: #2d3748;
+}
+
+.section-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.items-list {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 1rem;
+}
+
+.item-card {
+    background: #f8f9fa;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.item-header h4 {
+    margin: 0;
+    color: #2d3748;
+    font-size: 1rem;
+}
+
+.item-type {
+    background: #e2e8f0;
+    color: #4a5568;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.item-type.tip {
+    background: #c6f6d5;
+    color: #22543d;
+}
+
+.item-type.code {
+    background: #bee3f8;
+    color: #2a4365;
+}
+
+.item-type.resource {
+    background: #faf089;
+    color: #744210;
+}
+
+.item-description {
+    color: #718096;
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.empty-items {
+    text-align: center;
+    padding: 1rem;
+    color: #a0aec0;
+    font-style: italic;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #718096;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.empty-state h2 {
+    margin-bottom: 1rem;
+    color: #4a5568;
+}
+
+
+/* ------------------------------------------- */
+/* ------ ITEM CARDS IN MANAGE SECTIONS ------ */
+/* ------------------------------------------- */
+
+.items-header {
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.items-header h4 {
+    margin: 0;
+    color: #4b5563;
+    font-size: 1.1rem;
+}
+
+.item-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s;
+}
+
+.item-card:hover {
+    border-color: #cbd5e0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.item-title {
+    flex: 1;
+}
+
+.item-title h5 {
+    margin: 0 0 0.5rem 0;
+    color: #1f2937;
+    font-size: 1rem;
+}
+
+.item-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.item-description {
+    color: #6b7280;
+    margin: 0.75rem 0;
+    line-height: 1.5;
+}
+
+.item-url {
+    margin: 0.5rem 0;
+}
+
+.item-code {
+    margin-top: 0.75rem;
+}
+
+.item-code pre {
+    margin: 0;
+    border-radius: 4px;
+}
+
+.item-type {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.item-type.default { background: #e5e7eb; color: #374151; }
+.item-type.tip { background: #d1fae5; color: #065f46; }
+.item-type.code { background: #dbeafe; color: #1e40af; }
+.item-type.resource { background: #fef3c7; color: #92400e; }
+.item-type.warning { background: #fecaca; color: #991b1b; }
+.item-type.important { background: #f3e8ff; color: #6b21a8; }
+
+/* @media (max-width: 768px) {
+    .item-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .item-actions {
+        align-self: flex-end;
+    }
+} */
+
+
+/* ------------------------------------------- */
+/* ------------ CHEATSHEET STYLES ------------ */
+/* ------------------------------------------- */
+
+.cheatsheet-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    /* border-bottom: 1px solid #e2e8f0; */
+}
+
+.cheatsheet-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #1a202c;
+}
+
+.description {
+    font-size: 1.125rem;
+    color: #718096;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.section {
+    margin-bottom: 3rem;
+}
+
+.section h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #2d3748;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    transition: border-color 0.2s;
+}
+
+.card:hover {
+    border-color: #cbd5e0;
+}
+
+.card h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: #2d3748;
+}
+
+.card p {
+    color: #718096;
+    margin-bottom: 1rem;
+}
+
+.card-link {
+    color: #2b6cb0;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.card-link:hover {
+    text-decoration: underline;
+}
+
+
+/* ------------------------------------------- */
+/* --------------- CODE BLOCKS --------------- */
+/* ------------------------------------------- */
+
+pre {
+    background: #1a202c;
+    color: #e2e8f0;
+    padding: 1rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin-top: 1rem;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.875rem;
+}
+
+code {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+
+/* ------------------------------------------- */
+/* ----------------- BUTTONS ----------------- */
+/* ------------------------------------------- */
+
+.btn {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.btn-primary {
+    background: #2b6cb0;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2c5282;
+}
+
+.btn-secondary {
+    background: #e2e8f0;
+    color: #4a5568;
+}
+
+.btn-secondary:hover {
+    background: #cbd5e0;
+}
+
+.btn-danger {
+    background: #e53e3e;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c53030;
+}
+
+
+/* ------------------------------------------- */
+/* ------------------ FORMS ------------------ */
+/* ------------------------------------------- */
+
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+}
+
+.login-form {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.login-form h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #2d3748;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #4a5568;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #2b6cb0;
+    box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.1);
+}
+
+.form-group.checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-group.checkbox input {
+    width: auto;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 0.25rem;
+    color: #718096;
+    font-size: 0.875rem;
+}
+
+.topic-form {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+
+/* ------------------------------------------- */
+/* -------------- ADMIN STYLES --------------- */
+/* ------------------------------------------- */
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-header h1 {
+    color: #2d3748;
+    margin: 0;
+}
+
+/* -------- ALERTS -------- */
+.alert {
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+}
+
+.alert-success {
+    background: #c6f6d5;
+    color: #22543d;
+    border-color: #9ae6b4;
+}
+
+.alert-error {
+    background: #fed7d7;
+    color: #742a2a;
+    border-color: #feb2b2;
+}
+
+/* ----- EMPTY STATES ----- */
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #718096;
+}
+
+.empty-state h2 {
+    margin-bottom: 1rem;
+    color: #4a5568;
+}
+
+
+/* ------------------------------------------- */
+/* ------------ RESPONSIVE DESIGN ------------ */
+/* ------------------------------------------- */
+
+@media (max-width: 768px) {
+    /* -------- NAVIGATION --------- */
+    .nav-container {
+        padding: 0 1rem;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    /* ------- MAIN CONTENT -------- */
+    .main-content {
+        padding: 1rem;
+    }
+
+    /* ------- HERO SECTION -------- */
+    .hero h1 {
+        font-size: 2rem;
+    }
+
+    .hero p {
+        font-size: 1rem;
+    }
+
+    /* -------- TOPICS GRID --------- */
+    .topics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    /* ------ ADMIN TOPIC CARDS ------ */
+    .topic-card.admin {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .topic-actions {
+        align-self: flex-end;
+    }
+
+    /* ------ MANAGE SECTIONS ------ */
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .section-actions {
+        align-self: flex-end;
+    }
+
+    /* - ITEM CARDS IN MANAGE SECTIONS - */
+    .item-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .item-actions {
+        align-self: flex-end;
+    }
+
+    /* ----- CHEATSHEET STYLES ------ */
+    .cards-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* ------- ADMIN STYLES --------- */
+    .admin-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+}
+
+
+/* ------------------------------------------- */
+/* ------------- UTILITY CLASSES ------------- */
+/* ------------------------------------------- */
+
+.text-center {
+    text-align: center;
+}
+
+.mt-4 {
+    margin-top: 2rem;
+}
+
+.mb-4 {
+    margin-bottom: 2rem;
+}
+
+.hidden {
+    display: none;
+}

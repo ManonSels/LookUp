@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block title %}Admin Dashboard - QuickRef{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+    <h1>Admin Dashboard</h1>
+    <a href="{{ url_for('admin.new_topic') }}" class="btn btn-primary">New Topic</a>
+</div>
+
+<div class="topics-list">
+    {% for topic in topics %}
+    <div class="topic-card admin">
+        <div class="topic-info">
+            <h3>{{ topic.title }}</h3>
+            <p>{{ topic.description }}</p>
+            <div class="topic-meta">
+                <span class="slug">/{{ topic.slug }}</span>
+                <span class="category">{{ topic.category }}</span>
+                <span class="status {{ 'published' if topic.is_published else 'draft' }}">
+                    {{ 'Published' if topic.is_published else 'Draft' }}
+                </span>
+            </div>
+        </div>
+        <div class="topic-actions">
+            <a href="{{ url_for('home.cheatsheet', topic_slug=topic.slug) }}" class="btn btn-secondary" target="_blank">View</a>
+            <a href="{{ url_for('admin.edit_topic', topic_id=topic.id) }}" class="btn btn-secondary">Edit</a>
+            <a href="{{ url_for('admin.manage_sections', topic_id=topic.id) }}" class="btn btn-secondary">Sections</a>
+            <a href="{{ url_for('admin.delete_topic', topic_id=topic.id) }}" class="btn btn-danger" onclick="return confirm('Delete this topic?')">Delete</a>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h2>No topics yet</h2>
+        <p>Create your first topic to get started!</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

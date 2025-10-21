@@ -1,0 +1,138 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ 'Edit' if item else 'New' }} Item - Admin{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+    <h1>{{ 'Edit' if item else 'Add New' }} Item</h1>
+    <div>
+        <a href="{{ url_for('admin.manage_sections', topic_id=section.topic_id) }}" class="btn btn-secondary">
+            ← Back to Sections
+        </a>
+    </div>
+</div>
+
+<div class="item-form-container">
+    <form method="POST" class="item-form">
+        <div class="form-group">
+            <label for="title">Item Title *</label>
+            <input type="text" id="title" name="title" value="{{ item.title if item }}" required>
+            <small>The main title for this reference item</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="item_type">Item Type</label>
+            <select id="item_type" name="item_type">
+                <option value="default" {{ 'selected' if not item or item.item_type == 'default' }}>Default</option>
+                <option value="tip" {{ 'selected' if item and item.item_type == 'tip' }}>Tip</option>
+                <option value="code" {{ 'selected' if item and item.item_type == 'code' }}>Code</option>
+                <option value="resource" {{ 'selected' if item and item.item_type == 'resource' }}>Resource</option>
+                <option value="warning" {{ 'selected' if item and item.item_type == 'warning' }}>Warning</option>
+                <option value="important" {{ 'selected' if item and item.item_type == 'important' }}>Important</option>
+            </select>
+            <small>Determines the color and styling of the item</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="4" placeholder="Enter a detailed description...">{{ item.description if item }}</textarea>
+            <small>Optional detailed explanation or notes</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="url">URL</label>
+            <input type="url" id="url" name="url" value="{{ item.url if item }}" placeholder="https://example.com">
+            <small>Optional link to external resource</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="code">Code Snippet</label>
+            <textarea id="code" name="code" rows="6" placeholder="Enter code snippet...">{{ item.code if item }}</textarea>
+            <small>Optional code block (supports syntax highlighting)</small>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                {{ 'Update' if item else 'Create' }} Item
+            </button>
+            <a href="{{ url_for('admin.manage_sections', topic_id=section.topic_id) }}" class="btn btn-secondary">
+                Cancel
+            </a>
+            
+            {% if item %}
+            <a href="{{ url_for('admin.delete_item', item_id=item.id) }}" 
+               class="btn btn-danger" 
+               onclick="return confirm('Are you sure you want to delete this item?')">
+                Delete Item
+            </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<style>
+.item-form-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.item-form {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 0.25rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+</style>
+{% endblock %}

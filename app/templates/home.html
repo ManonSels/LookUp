@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block title %}QuickRef - Home{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>Quick Reference Guides</h1>
+    <p>Your go-to place for organized information on various topics</p>
+</div>
+
+{% if categorized_topics %}
+    {% for category, topics in categorized_topics.items() %}
+    <section class="category-section">
+        <h2 class="category-header">{{ category }}</h2>
+        <div class="topics-grid">
+            {% for topic in topics %}
+            <a href="{{ url_for('home.cheatsheet', topic_slug=topic.slug) }}" class="topic-card">
+                <h3>{{ topic.title }}</h3>
+                <p>{{ topic.description }}</p>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endfor %}
+{% else %}
+<div class="empty-state">
+    <h2>No topics available yet</h2>
+    <p>Check back later or contact an admin to add content.</p>
+</div>
+{% endif %}
+{% endblock %}

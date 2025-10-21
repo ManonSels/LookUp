@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ 'Edit' if topic else 'New' }} Topic - Admin{% endblock %}
+
+{% block content %}
+<form method="POST" class="topic-form">
+    <div class="form-group">
+        <label for="slug">Slug:</label>
+        <input type="text" id="slug" name="slug" value="{{ topic.slug if topic }}" required>
+        <small>URL-friendly name (e.g., "python-basics")</small>
+    </div>
+    
+    <div class="form-group">
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" value="{{ topic.title if topic }}" required>
+    </div>
+    
+    <div class="form-group">
+        <label for="category">Category:</label>
+        <input type="text" id="category" name="category" value="{{ topic.category if topic else 'General' }}" required>
+        <small>e.g., "Programming", "Tools", "Linux Commands"</small>
+    </div>
+    
+    <div class="form-group">
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" rows="3">{{ topic.description if topic }}</textarea>
+    </div>
+    
+    <div class="form-group checkbox">
+        <input type="checkbox" id="is_published" name="is_published" {{ 'checked' if topic and topic.is_published }}>
+        <label for="is_published">Publish this topic</label>
+    </div>
+    
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">{{ 'Update' if topic else 'Create' }} Topic</button>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}
