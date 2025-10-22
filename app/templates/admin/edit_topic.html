@@ -16,11 +16,20 @@
     </div>
     
     <div class="form-group">
-        <label for="category">Category:</label>
-        <input type="text" id="category" name="category" value="{{ topic.category if topic else 'General' }}" required>
-        <small>e.g., "Programming", "Tools", "Linux Commands"</small>
+        <label for="category_id">Category:</label>
+        <select id="category_id" name="category_id" required>
+            {% for cat_id, cat_name in categories %}
+            <option value="{{ cat_id }}" 
+                    {{ 'selected' if topic and topic.category_id == cat_id else '' }}>
+                {{ cat_name }}
+            </option>
+            {% endfor %}
+        </select>
+        <small>
+            <a href="{{ url_for('admin.manage_categories') }}">Manage categories</a> to add new ones
+        </small>
     </div>
-    
+
     <div class="form-group">
         <label for="description">Description:</label>
         <textarea id="description" name="description" rows="3">{{ topic.description if topic }}</textarea>

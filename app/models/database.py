@@ -3,23 +3,6 @@ import os
 from flask import g
 import hashlib
 
-# class DBConnection:
-#     def __enter__(self):
-#         self.conn = sqlite3.connect('Instance/site2.db')
-#         self.conn.row_factory = sqlite3.Row
-#         self.cursor = self.conn.cursor()
-#         return self.cursor
-
-#     def __exit__(self, exc_type, exc_val, exc_tb):
-#         if self.cursor:
-#             self.cursor.close()
-#         if self.conn:
-#             if exc_type is None:
-#                 self.conn.commit()
-#             self.conn.close()
-#         return False
-
-
 class DBConnection:
     def __enter__(self):
         db_path = os.path.join(os.path.dirname(__file__), '../../instance/site.db')

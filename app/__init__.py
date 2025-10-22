@@ -1,17 +1,3 @@
-# from flask import Flask
-
-# def create_app():
-#     app = Flask(__name__)
-#     app.secret_key = 'your-secret-key-here-make-it-very-long-and-random'
-    
-#     # Import and register blueprints
-#     from .routes import home_bp
-#     app.register_blueprint(home_bp)
-
-    
-#     return app
-
-
 from flask import Flask
 from flask_login import LoginManager
 from app.models.schema import Schema
