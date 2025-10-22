@@ -15,6 +15,16 @@ class Schema:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+
+        # ------------- CATEGORY TABLE ------------- #
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS category (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT UNIQUE NOT NULL,
+                display_order INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
         
         # ------------- TOPICS TABLE ------------- #
         cursor.execute('''
@@ -23,12 +33,13 @@ class Schema:
                 slug TEXT UNIQUE NOT NULL,
                 title TEXT NOT NULL,
                 description TEXT,
-                category TEXT DEFAULT 'General',
+                category_id INTEGER NOT NULL,
                 is_published BOOLEAN DEFAULT 0,
                 user_id INTEGER NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES user (id)
+                FOREIGN KEY (user_id) REFERENCES user (id),
+                FOREIGN KEY (category_id) REFERENCES category (id)
             )
         ''')
         

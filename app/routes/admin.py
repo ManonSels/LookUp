@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from app.models.topic import TopicModel
 from app.models.section import SectionModel
 from app.models.section_item import SectionItemModel
+from app.models.category import CategoryModel 
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -31,6 +32,93 @@ def dashboard():
 
 
 # ------------------------------------------- #
+# --------------- CATEGORIES ---------------- #
+# ------------------------------------------- #
+
+@admin_bp.route('/categories')
+@admin_required
+def manage_categories():
+    category_model = CategoryModel()
+    categories = category_model.get_all()
+    return render_template('admin/categories.html', categories=categories)
+
+@admin_bp.route('/category/new', methods=['GET', 'POST'])
+@admin_required
+def new_category():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        display_order = request.form.get('display_order', 0, type=int)
+        
+        if not name:
+            flash('Category name is required', 'error')
+            return render_template('admin/edit_category.html')
+        
+        category_model = CategoryModel()
+        category_id = category_model.create(name, display_order)
+        
+        if category_id:
+            flash('Category created successfully!', 'success')
+            return redirect(url_for('admin.manage_categories'))
+        else:
+            flash('Error creating category. Name might already exist.', 'error')
+    
+    return render_template('admin/edit_category.html')
+
+@admin_bp.route('/category/<int:category_id>/edit', methods=['GET', 'POST'])
+@admin_required
+def edit_category(category_id):
+    category_model = CategoryModel()
+    category = category_model.get_by_id(category_id)
+    
+    if not category:
+        flash('Category not found', 'error')
+        return redirect(url_for('admin.manage_categories'))
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        display_order = request.form.get('display_order', 0, type=int)
+        
+        if category_model.update(category_id, name, display_order):
+            flash('Category updated successfully!', 'success')
+            return redirect(url_for('admin.manage_categories'))
+        else:
+            flash('Error updating category', 'error')
+    
+    return render_template('admin/edit_category.html', category=category)
+
+@admin_bp.route('/category/<int:category_id>/delete')
+@admin_required
+def delete_category(category_id):
+    category_model = CategoryModel()
+    
+    # Check if category has topics
+    topic_model = TopicModel()
+    topics = topic_model.get_by_category(category_id)
+    
+    if topics:
+        flash('Cannot delete category that has topics. Move or delete the topics first.', 'error')
+    else:
+        if category_model.delete(category_id):
+            flash('Category deleted successfully!', 'success')
+        else:
+            flash('Error deleting category', 'error')
+    
+    return redirect(url_for('admin.manage_categories'))
+
+# API for reordering categories
+@admin_bp.route('/api/categories/reorder', methods=['POST'])
+@admin_required
+def api_reorder_categories():
+    order_data = request.json.get('order', [])
+    
+    category_model = CategoryModel()
+    for index, category_id in enumerate(order_data):
+        category_model.update(category_id, None, index)  # Update only display_order
+    
+    return jsonify({'success': True})
+
+
+# ------------------------------------------- #
 # ----------------- TOPICS ------------------ #
 # ------------------------------------------- #
 
@@ -42,7 +130,6 @@ def new_topic():
         slug = request.form.get('slug')
         title = request.form.get('title')
         description = request.form.get('description')
-        category = request.form.get('category', 'General')
         is_published = 'is_published' in request.form
         
         if not slug or not title:
@@ -50,7 +137,8 @@ def new_topic():
             return render_template('admin/edit_topic.html')
         
         topic_model = TopicModel()
-        topic_id = topic_model.create_topic(slug, title, description, current_user.id, category, is_published)
+        # Remove the category parameter
+        topic_id = topic_model.create_topic(slug, title, description, current_user.id, is_published)
         
         if topic_id:
             flash('Topic created successfully!', 'success')
@@ -76,10 +164,10 @@ def edit_topic(topic_id):
         slug = request.form.get('slug')
         title = request.form.get('title')
         description = request.form.get('description')
-        category = request.form.get('category', 'General')
         is_published = 'is_published' in request.form
         
-        if topic_model.update_topic(topic_id, slug, title, description, category, is_published):
+        # Remove the category parameter
+        if topic_model.update_topic(topic_id, slug, title, description, is_published):
             flash('Topic updated successfully!', 'success')
             return redirect(url_for('admin.dashboard'))
         else:
@@ -280,3 +368,28 @@ def delete_item(item_id):
         flash('Error deleting item', 'error')
     
     return redirect(url_for('admin.manage_sections', topic_id=section.topic_id))
+
+
+
+
+
+@admin_bp.route('/debug/categories-db')
+@admin_required
+def debug_categories_db():
+    category_model = CategoryModel()
+    categories = category_model.get_all()
+    
+    # Also check what category_id your topics have
+    from app.models.database import db_connection
+    
+    @db_connection
+    def get_topic_categories(cursor):
+        cursor.execute('SELECT id, title, category_id FROM topic')
+        return cursor.fetchall()
+    
+    topics = get_topic_categories()
+    
+    return jsonify({
+        'categories': [{'id': c.id, 'name': c.name} for c in categories],
+        'topics_with_categories': [dict(topic) for topic in topics]
+    })

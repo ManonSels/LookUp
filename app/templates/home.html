@@ -9,11 +9,12 @@
 </div>
 
 {% if categorized_topics %}
-    {% for category, topics in categorized_topics.items() %}
+    <!-- New category system -->
+    {% for category_name, category_data in categorized_topics.items() %}
     <section class="category-section">
-        <h2 class="category-header">{{ category }}</h2>
+        <h2 class="category-header">{{ category_name }}</h2>
         <div class="topics-grid">
-            {% for topic in topics %}
+            {% for topic in category_data.topics %}
             <a href="{{ url_for('home.cheatsheet', topic_slug=topic.slug) }}" class="topic-card">
                 <h3>{{ topic.title }}</h3>
                 <p>{{ topic.description }}</p>
@@ -22,6 +23,16 @@
         </div>
     </section>
     {% endfor %}
+{% elif topics %}
+    <!-- Fallback: simple topic list -->
+    <div class="topics-grid">
+        {% for topic in topics %}
+        <a href="{{ url_for('home.cheatsheet', topic_slug=topic.slug) }}" class="topic-card">
+            <h3>{{ topic.title }}</h3>
+            <p>{{ topic.description }}</p>
+        </a>
+        {% endfor %}
+    </div>
 {% else %}
 <div class="empty-state">
     <h2>No topics available yet</h2>

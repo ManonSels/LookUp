@@ -76,29 +76,31 @@ class TopicModel:
     
     
     @db_connection
-    def create_topic(self, cursor, slug, title, description, user_id, category='General', is_published=False):
+    def create_topic(self, cursor, slug, title, description, user_id, is_published=False):
         try:
+            # Use a default category_id (1 = General)
             cursor.execute(
-                'INSERT INTO topic (slug, title, description, category, user_id, is_published) VALUES (?, ?, ?, ?, ?, ?)',
-                (slug, title, description, category, user_id, 1 if is_published else 0)
+                'INSERT INTO topic (slug, title, description, category_id, user_id, is_published) VALUES (?, ?, ?, ?, ?, ?)',
+                (slug, title, description, 1, user_id, 1 if is_published else 0)  # Added category_id=1
             )
             return cursor.lastrowid
         except Exception as e:
             print(f"Error creating topic: {e}")
+            print(f"Slug: {slug}, Title: {title}, User ID: {user_id}")
             return None
 
     @db_connection
-    def update_topic(self, cursor, topic_id, slug, title, description, category, is_published):
+    def update_topic(self, cursor, topic_id, slug, title, description, is_published):
         try:
             cursor.execute(
-                'UPDATE topic SET slug = ?, title = ?, description = ?, category = ?, is_published = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-                (slug, title, description, category, 1 if is_published else 0, topic_id)
+                'UPDATE topic SET slug = ?, title = ?, description = ?, is_published = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                (slug, title, description, 1 if is_published else 0, topic_id)
             )
             return True
         except Exception as e:
             print(f"Error updating topic: {e}")
             return False
-    
+        
     @db_connection
     def delete_topic(self, cursor, topic_id):
         try:
