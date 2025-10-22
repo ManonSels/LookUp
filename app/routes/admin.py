@@ -117,6 +117,40 @@ def api_reorder_categories():
     
     return jsonify({'success': True})
 
+# --------- SETUP CATEGORIES --------- #
+@admin_bp.route('/setup-categories')
+@admin_required
+def setup_categories():
+    """Create default categories and assign existing topics"""
+    try:
+        # Use your DBConnection directly
+        from app.models.database import DBConnection
+        
+        with DBConnection() as cursor:
+            # Create default categories
+            default_categories = [
+                ('Programming', 0),
+                ('Tools', 1), 
+                ('Linux', 2),
+                ('General', 3)
+            ]
+            
+            for name, order in default_categories:
+                cursor.execute('INSERT OR IGNORE INTO category (name, display_order) VALUES (?, ?)', (name, order))
+            
+            # Assign all existing topics to General category
+            cursor.execute('UPDATE topic SET category_id = (SELECT id FROM category WHERE name = "General") WHERE category_id IS NULL OR category_id = ""')
+            
+            # Count how many topics were updated
+            cursor.execute('SELECT changes()')
+            topics_updated = cursor.fetchone()[0]
+            
+            flash(f"✅ Categories setup completed! Updated {topics_updated} topics.", 'success')
+            
+    except Exception as e:
+        flash(f'❌ Error setting up categories: {e}', 'error')
+    
+    return redirect(url_for('admin.dashboard'))
 
 # ------------------------------------------- #
 # ----------------- TOPICS ------------------ #

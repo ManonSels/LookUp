@@ -13,14 +13,22 @@ def index():
         # Try the new category system first
         category_model = CategoryModel()
         categorized_topics = category_model.get_topics_by_category()
-        print(f"✅ Category system working - Found {len(categorized_topics)} categories")
-        return render_template('home.html', categorized_topics=categorized_topics)
+        
+        # Check if we actually got valid data
+        if categorized_topics and len(categorized_topics) > 0:
+            print(f"✅ Using category system with {len(categorized_topics)} categories")
+            return render_template('home.html', categorized_topics=categorized_topics)
+        else:
+            # Category system returned empty or None
+            print("❌ Category system returned empty, using fallback")
+            raise Exception("No categories found")
+            
     except Exception as e:
-        print(f"❌ Category system error: {e}")
+        print(f"Category system failed: {e}")
         # Fallback to simple topic list
         topic_model = TopicModel()
         topics = topic_model.get_all_published()
-        print(f"✅ Fallback to simple topics - Found {len(topics)} published topics")
+        print(f"✅ Using fallback with {len(topics)} topics")
         return render_template('home.html', topics=topics)
 
 @bp.route('/<topic_slug>')
@@ -63,3 +71,26 @@ def debug_data():
     }
     
     return jsonify(debug_info)
+
+@bp.route('/debug-homepage')
+def debug_homepage():
+    topic_model = TopicModel()
+    topics = topic_model.get_all_published()
+    
+    # Check categories
+    try:
+        category_model = CategoryModel()
+        categorized = category_model.get_topics_by_category()
+        has_categories = len(categorized) > 0
+    except Exception as e:
+        has_categories = False
+        category_error = str(e)
+    
+    return f"""
+    <h1>Homepage Debug</h1>
+    <p>Published topics: {len(topics)}</p>
+    <p>Topics found: {[t.title for t in topics]}</p>
+    <p>Categories working: {has_categories}</p>
+    <p>Category error: {category_error if not has_categories else 'None'}</p>
+    <p>Template variables being passed: categorized_topics={has_categories}, topics={len(topics) > 0}</p>
+    """
