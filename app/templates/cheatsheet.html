@@ -16,17 +16,11 @@
         <h2>{{ section.title }}</h2>
         <div class="cards-grid">
             {% for item in section.items %}
-            <div class="card {{ item.item_type }}">
+            <div class="card">
                 <h3>{{ item.title }}</h3>
-                {% if item.description %}
-                <p>{{ item.description }}</p>
-                {% endif %}
-                {% if item.url %}
-                <a href="{{ item.url }}" target="_blank" class="card-link">Visit Resource →</a>
-                {% endif %}
-                {% if item.code %}
-                <pre><code>{{ item.code }}</code></pre>
-                {% endif %}
+                <div class="card-content">
+                    {{ item.markdown_content|markdown|safe }}
+                </div>
             </div>
             {% endfor %}
         </div>

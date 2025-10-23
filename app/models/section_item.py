@@ -1,6 +1,5 @@
 from .database import db_connection
 
-
 class SectionItemModel:
     @db_connection
     def get_by_section(self, cursor, section_id):
@@ -22,18 +21,18 @@ class SectionItemModel:
         return self._dict_to_item(item_data)
     
     @db_connection
-    def create_item(self, cursor, title, section_id, description=None, url=None, code=None, item_type='default', display_order=0):
+    def create_item(self, cursor, title, section_id, markdown_content="", display_order=0):
         cursor.execute(
-            'INSERT INTO section_item (title, description, url, code, item_type, display_order, section_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            (title, description, url, code, item_type, display_order, section_id)
+            'INSERT INTO section_item (title, markdown_content, display_order, section_id) VALUES (?, ?, ?, ?)',
+            (title, markdown_content, display_order, section_id)
         )
         return cursor.lastrowid
     
     @db_connection
-    def update_item(self, cursor, item_id, title, description, url, code, item_type, display_order):
+    def update_item(self, cursor, item_id, title, markdown_content, display_order):
         cursor.execute(
-            'UPDATE section_item SET title = ?, description = ?, url = ?, code = ?, item_type = ?, display_order = ? WHERE id = ?',
-            (title, description, url, code, item_type, display_order, item_id)
+            'UPDATE section_item SET title = ?, markdown_content = ?, display_order = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            (title, markdown_content, display_order, item_id)
         )
         return True
     
@@ -46,10 +45,9 @@ class SectionItemModel:
         item = SectionItemModel()
         item.id = item_data['id']
         item.title = item_data['title']
-        item.description = item_data['description']
-        item.url = item_data['url']
-        item.code = item_data['code']
-        item.item_type = item_data['item_type']
+        item.markdown_content = item_data['markdown_content']
         item.display_order = item_data['display_order']
         item.section_id = item_data['section_id']
+        item.created_at = item_data['created_at']
+        item.updated_at = item_data['updated_at']
         return item

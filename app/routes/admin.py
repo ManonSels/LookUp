@@ -264,24 +264,8 @@ def api_delete_section():
 # ------------------------------------------- #
 # ------------------ ITEMS ------------------ #
 # ------------------------------------------- #
-
-# -------- NEW ITEM (QUICK)  -------- #
-@admin_bp.route('/api/item/new', methods=['POST'])
-@admin_required
-def api_new_item():
-    section_id = request.json.get('section_id')
-    title = request.json.get('title')
-    item_type = request.json.get('type', 'default')
     
-    item_model = SectionItemModel()
-    item_id = item_model.create_item(title, section_id, item_type=item_type)
-    
-    if item_id:
-        return jsonify({'success': True, 'item_id': item_id})
-    else:
-        return jsonify({'success': False, 'error': 'Failed to create item'})
-    
-# -------- NEW ITEM  -------- #
+# -------- NEW ITEM -------- #
 @admin_bp.route('/section/<int:section_id>/item/new', methods=['GET', 'POST'])
 @admin_required
 def new_item(section_id):
@@ -294,10 +278,7 @@ def new_item(section_id):
     
     if request.method == 'POST':
         title = request.form.get('title')
-        description = request.form.get('description')
-        url = request.form.get('url')
-        code = request.form.get('code')
-        item_type = request.form.get('item_type', 'default')
+        markdown_content = request.form.get('markdown_content', '')
         
         if not title:
             flash('Title is required', 'error')
@@ -307,10 +288,7 @@ def new_item(section_id):
         item_id = item_model.create_item(
             title=title,
             section_id=section_id,
-            description=description,
-            url=url,
-            code=code,
-            item_type=item_type
+            markdown_content=markdown_content
         )
         
         if item_id:
@@ -321,7 +299,7 @@ def new_item(section_id):
     
     return render_template('admin/edit_item.html', section=section)
 
-# ------- EDIT ITEM  ------- #
+# ------- EDIT ITEM ------- #
 @admin_bp.route('/item/<int:item_id>/edit', methods=['GET', 'POST'])
 @admin_required
 def edit_item(item_id):
@@ -337,16 +315,13 @@ def edit_item(item_id):
     
     if request.method == 'POST':
         title = request.form.get('title')
-        description = request.form.get('description')
-        url = request.form.get('url')
-        code = request.form.get('code')
-        item_type = request.form.get('item_type', 'default')
+        markdown_content = request.form.get('markdown_content', '')
         
         if not title:
             flash('Title is required', 'error')
             return render_template('admin/edit_item.html', section=section, item=item)
         
-        if item_model.update_item(item_id, title, description, url, code, item_type, item.display_order):
+        if item_model.update_item(item_id, title, markdown_content, item.display_order):
             flash('Item updated successfully!', 'success')
             return redirect(url_for('admin.manage_sections', topic_id=section.topic_id))
         else:

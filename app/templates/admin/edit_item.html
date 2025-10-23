@@ -21,34 +21,13 @@
         </div>
         
         <div class="form-group">
-            <label for="item_type">Item Type</label>
-            <select id="item_type" name="item_type">
-                <option value="default" {{ 'selected' if not item or item.item_type == 'default' }}>Default</option>
-                <option value="tip" {{ 'selected' if item and item.item_type == 'tip' }}>Tip</option>
-                <option value="code" {{ 'selected' if item and item.item_type == 'code' }}>Code</option>
-                <option value="resource" {{ 'selected' if item and item.item_type == 'resource' }}>Resource</option>
-                <option value="warning" {{ 'selected' if item and item.item_type == 'warning' }}>Warning</option>
-                <option value="important" {{ 'selected' if item and item.item_type == 'important' }}>Important</option>
-            </select>
-            <small>Determines the color and styling of the item</small>
-        </div>
-        
-        <div class="form-group">
-            <label for="description">Description</label>
-            <textarea id="description" name="description" rows="4" placeholder="Enter a detailed description...">{{ item.description if item }}</textarea>
-            <small>Optional detailed explanation or notes</small>
-        </div>
-        
-        <div class="form-group">
-            <label for="url">URL</label>
-            <input type="url" id="url" name="url" value="{{ item.url if item }}" placeholder="https://example.com">
-            <small>Optional link to external resource</small>
-        </div>
-        
-        <div class="form-group">
-            <label for="code">Code Snippet</label>
-            <textarea id="code" name="code" rows="6" placeholder="Enter code snippet...">{{ item.code if item }}</textarea>
-            <small>Optional code block (supports syntax highlighting)</small>
+            <label for="markdown_content">Content (Markdown)</label>
+            <textarea id="markdown_content" name="markdown_content" rows="15" placeholder="Write your content using Markdown syntax...">{{ item.markdown_content if item }}</textarea>
+            <small>
+                Supports: <strong>**bold**</strong>, <em>*italic*</em>, 
+                <code>`code`</code>, ```code blocks```, [links](url), lists, and more.
+                <a href="https://www.markdownguide.org/cheat-sheet/" target="_blank">Markdown Guide</a>
+            </small>
         </div>
         
         <div class="form-actions">
@@ -69,4 +48,11 @@
         </div>
     </form>
 </div>
+
+<style>
+#markdown_content {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9rem;
+}
+</style>
 {% endblock %}
