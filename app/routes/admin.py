@@ -27,8 +27,15 @@ def admin_required(f):
 @admin_required
 def dashboard():
     topic_model = TopicModel()
-    topics = topic_model.get_all()
-    return render_template('admin/dashboard.html', topics=topics)
+    category_model = CategoryModel()
+    
+    # Get topics grouped by category
+    categorized_topics = topic_model.get_all_grouped_by_category()
+    categories = category_model.get_all()
+    
+    return render_template('admin/dashboard.html', 
+                         categorized_topics=categorized_topics,
+                         categories=categories)
 
 
 # ------------------------------------------- #
@@ -193,6 +200,48 @@ def delete_topic(topic_id):
         flash('Error deleting topic', 'error')
     
     return redirect(url_for('admin.dashboard'))
+
+# ------ REORDER TOPICS ------ #
+@admin_bp.route('/api/topics/reorder', methods=['POST'])
+@admin_required
+def api_reorder_topics():
+    try:
+        # Use the DBConnection context manager directly
+        from app.models.database import DBConnection
+        with DBConnection() as cursor:
+            category_id = request.json.get('category_id')
+            order_data = request.json.get('order', [])
+            
+            # Update display_order for topics in this specific category
+            for display_order, topic_id in enumerate(order_data):
+                cursor.execute(
+                    'UPDATE topic SET display_order = ? WHERE id = ? AND category_id = ?',
+                    (display_order, topic_id, category_id)
+                )
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Error reordering topics: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+# ------ CHANGE TOPIC CATEGORY ------ #
+@admin_bp.route('/api/topics/change_category', methods=['POST'])
+@admin_required
+def api_change_topic_category():
+    try:
+        # Use the DBConnection context manager directly
+        from app.models.database import DBConnection
+        with DBConnection() as cursor:
+            topic_id = request.json.get('topic_id')
+            category_id = request.json.get('category_id')
+            
+            cursor.execute(
+                'UPDATE topic SET category_id = ? WHERE id = ?',
+                (category_id, topic_id)
+            )
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Error changing topic category: {e}")
+        return jsonify({'success': False, 'error': str(e)})
 
 
 # ------------------------------------------- #

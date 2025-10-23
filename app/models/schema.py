@@ -34,6 +34,7 @@ class Schema:
                 title TEXT NOT NULL,
                 description TEXT,
                 category_id INTEGER NOT NULL,
+                display_order INTEGER DEFAULT 0,
                 is_published BOOLEAN DEFAULT 0,
                 user_id INTEGER NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

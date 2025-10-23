@@ -5,36 +5,253 @@
 {% block content %}
 <div class="admin-header">
     <h1>Admin Dashboard</h1>
-    <a href="{{ url_for('admin.manage_categories') }}" class="btn btn-primary">Edit Categories</a>
-    <a href="{{ url_for('admin.new_topic') }}" class="btn btn-primary">New Topic</a>
+    <div>
+        <a href="{{ url_for('admin.manage_categories') }}" class="btn btn-primary">Edit Categories</a>
+        <a href="{{ url_for('admin.new_topic') }}" class="btn btn-primary">New Topic</a>
+    </div>
 </div>
 
-<div class="topics-list">
-    {% for topic in topics %}
-    <div class="topic-card admin">
-        <div class="topic-info">
-            <h3>{{ topic.title }}</h3>
-            <p>{{ topic.description }}</p>
-            <div class="topic-meta">
-                <span class="slug">/{{ topic.slug }}</span>
-                <span class="category">{{ topic.category }}</span>
-                <span class="status {{ 'published' if topic.is_published else 'draft' }}">
-                    {{ 'Published' if topic.is_published else 'Draft' }}
-                </span>
-            </div>
+<div class="categories-container" id="categories-container">
+    {% for category_id, category_data in categorized_topics.items() %}
+    <div class="category-column" data-category-id="{{ category_id }}">
+        <div class="category-header">
+            <h2>{{ category_data.name }}</h2>
+            <span class="topic-count">{{ category_data.topics|length }} topics</span>
         </div>
-        <div class="topic-actions">
-            <a href="{{ url_for('home.cheatsheet', topic_slug=topic.slug) }}" class="btn btn-secondary" target="_blank">View</a>
-            <a href="{{ url_for('admin.edit_topic', topic_id=topic.id) }}" class="btn btn-secondary">Edit</a>
-            <a href="{{ url_for('admin.manage_sections', topic_id=topic.id) }}" class="btn btn-secondary">Sections</a>
-            <a href="{{ url_for('admin.delete_topic', topic_id=topic.id) }}" class="btn btn-danger" onclick="return confirm('Delete this topic?')">Delete</a>
+        
+        <div class="topics-list" id="topics-list-{{ category_id }}">
+            {% for topic in category_data.topics %}
+            <div class="topic-card admin draggable" data-topic-id="{{ topic.id }}" data-category-id="{{ category_id }}">
+                <div class="topic-handle">
+                    <span class="handle-icon">⋮⋮</span>
+                </div>
+                <div class="topic-info">
+                    <h3>{{ topic.title }}</h3>
+                    <p>{{ topic.description }}</p>
+                    <div class="topic-meta">
+                        <span class="slug">/{{ topic.slug }}</span>
+                        <span class="status {{ 'published' if topic.is_published else 'draft' }}">
+                            {{ 'Published' if topic.is_published else 'Draft' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-actions">
+                    <a href="{{ url_for('home.cheatsheet', topic_slug=topic.slug) }}" class="btn btn-secondary" target="_blank">View</a>
+                    <a href="{{ url_for('admin.edit_topic', topic_id=topic.id) }}" class="btn btn-secondary">Edit</a>
+                    <a href="{{ url_for('admin.manage_sections', topic_id=topic.id) }}" class="btn btn-secondary">Sections</a>
+                    <a href="{{ url_for('admin.delete_topic', topic_id=topic.id) }}" class="btn btn-danger" onclick="return confirm('Delete this topic?')">Delete</a>
+                </div>
+            </div>
+            {% endfor %}
+            
+            {% if category_data.topics|length == 0 %}
+            <div class="empty-category">
+                <p>No topics in this category</p>
+                <p class="drop-hint">Drop topics here to assign them to this category</p>
+            </div>
+            {% endif %}
         </div>
     </div>
     {% else %}
     <div class="empty-state">
-        <h2>No topics yet</h2>
-        <p>Create your first topic to get started!</p>
+        <h2>No categories or topics yet</h2>
+        <p>Create your first category and topic to get started!</p>
     </div>
     {% endfor %}
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Initializing drag and drop...');
+    
+    // Store the original category of each topic when drag starts
+    let originalCategories = new Map();
+    
+    // Initialize Sortable for each category
+    const topicLists = document.querySelectorAll('.topics-list');
+    
+    topicLists.forEach(topicList => {
+        const categoryId = topicList.getAttribute('id').replace('topics-list-', '');
+        console.log(`Initializing category ${categoryId}`);
+        
+        new Sortable(topicList, {
+            group: {
+                name: 'topics',
+                pull: true,
+                put: true
+            },
+            handle: '.topic-handle .handle-icon',
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
+            
+            // When drag starts
+            onStart: function(evt) {
+                const topicId = evt.item.getAttribute('data-topic-id');
+                const fromCategoryId = evt.from.getAttribute('id').replace('topics-list-', '');
+                originalCategories.set(topicId, fromCategoryId);
+                console.log(`Started dragging topic ${topicId} from category ${fromCategoryId}`);
+            },
+            
+            // When item is added to a new list (category change)
+            onAdd: function(evt) {
+                const topicId = evt.item.getAttribute('data-topic-id');
+                const newCategoryId = evt.to.getAttribute('id').replace('topics-list-', '');
+                const oldCategoryId = originalCategories.get(topicId);
+                
+                console.log(`Topic ${topicId} moved from category ${oldCategoryId} to ${newCategoryId}`);
+                
+                // Always update category when moving between lists
+                updateTopicCategory(topicId, newCategoryId, oldCategoryId);
+            },
+            
+            // When order changes within the same category
+            onUpdate: function(evt) {
+                const categoryId = evt.to.getAttribute('id').replace('topics-list-', '');
+                console.log(`Order changed in category ${categoryId}`);
+                updateTopicOrderInCategory(categoryId);
+            },
+            
+            // When drag ends (for cleanup)
+            onEnd: function(evt) {
+                const topicId = evt.item.getAttribute('data-topic-id');
+                originalCategories.delete(topicId);
+            }
+        });
+    });
+
+    function updateTopicCategory(topicId, newCategoryId, oldCategoryId) {
+        console.log(`Updating topic ${topicId} to category ${newCategoryId}`);
+        
+        fetch("{{ url_for('admin.api_change_topic_category') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                topic_id: parseInt(topicId),
+                category_id: parseInt(newCategoryId)
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                console.log(`Successfully updated topic ${topicId} category`);
+                // Update the topic's data attribute
+                const topicCard = document.querySelector(`[data-topic-id="${topicId}"]`);
+                if (topicCard) {
+                    topicCard.setAttribute('data-category-id', newCategoryId);
+                }
+                
+                // Update category counts
+                updateCategoryCounts();
+                
+                // Update order in the new category
+                updateTopicOrderInCategory(newCategoryId);
+                
+                // Show success message
+                showFlashMessage('Topic category updated successfully!', 'success');
+            } else {
+                throw new Error(data.error || 'Unknown error');
+            }
+        })
+        .catch(error => {
+            console.error('Error changing topic category:', error);
+            showFlashMessage('Error changing topic category: ' + error.message, 'error');
+            
+            // Revert the drag visually
+            revertTopicToCategory(topicId, oldCategoryId);
+        });
+    }
+
+    function updateTopicOrderInCategory(categoryId) {
+        const topicList = document.getElementById(`topics-list-${categoryId}`);
+        const topicIds = Array.from(topicList.querySelectorAll('.topic-card'))
+            .map(card => card.getAttribute('data-topic-id'));
+        
+        console.log(`Updating order for category ${categoryId}:`, topicIds);
+        
+        if (topicIds.length === 0) return;
+        
+        fetch("{{ url_for('admin.api_reorder_topics') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                category_id: parseInt(categoryId),
+                order: topicIds
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                console.log(`Successfully updated topic order for category ${categoryId}`);
+            } else {
+                throw new Error(data.error || 'Unknown error');
+            }
+        })
+        .catch(error => {
+            console.error('Error reordering topics:', error);
+            showFlashMessage('Error reordering topics: ' + error.message, 'error');
+        });
+    }
+
+    function revertTopicToCategory(topicId, categoryId) {
+        const topicCard = document.querySelector(`[data-topic-id="${topicId}"]`);
+        const targetList = document.getElementById(`topics-list-${categoryId}`);
+        
+        if (topicCard && targetList) {
+            targetList.appendChild(topicCard);
+            topicCard.setAttribute('data-category-id', categoryId);
+            updateCategoryCounts();
+        }
+    }
+
+    function updateCategoryCounts() {
+        document.querySelectorAll('.category-column').forEach(column => {
+            const categoryId = column.getAttribute('data-category-id');
+            const topicList = column.querySelector('.topics-list');
+            const topicCount = topicList.querySelectorAll('.topic-card').length;
+            const countElement = column.querySelector('.topic-count');
+            
+            if (countElement) {
+                countElement.textContent = topicCount + ' topic' + (topicCount !== 1 ? 's' : '');
+            }
+        });
+    }
+
+    function showFlashMessage(message, type) {
+        // Create a flash message element
+        const flashDiv = document.createElement('div');
+        flashDiv.className = `alert alert-${type}`;
+        flashDiv.textContent = message;
+        
+        // Insert after the admin header
+        const adminHeader = document.querySelector('.admin-header');
+        if (adminHeader) {
+            adminHeader.parentNode.insertBefore(flashDiv, adminHeader.nextSibling);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                flashDiv.remove();
+            }, 3000);
+        }
+    }
+    
+    console.log('Drag and drop initialized successfully');
+});
+</script>
 {% endblock %}

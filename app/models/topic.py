@@ -34,13 +34,43 @@ class TopicModel:
     @db_connection
     def get_all(self, cursor):
         cursor.execute('''
-            SELECT t.*, c.name as category_name 
+            SELECT t.*, c.name as category_name, c.display_order as category_display_order
             FROM topic t
             LEFT JOIN category c ON t.category_id = c.id
-            ORDER BY t.title
+            ORDER BY c.display_order, t.display_order, t.title
         ''')
         topics_data = cursor.fetchall()
         return [self._dict_to_topic(topic) for topic in topics_data]
+
+    # ----- ALL GROUPED BY CATEGORY ----- #
+    @db_connection
+    def get_all_grouped_by_category(self, cursor):
+        cursor.execute('''
+            SELECT t.*, c.name as category_name, c.id as category_id, c.display_order as category_display_order
+            FROM topic t
+            LEFT JOIN category c ON t.category_id = c.id
+            ORDER BY c.display_order ASC, t.display_order ASC, t.title ASC
+        ''')
+        topics_data = cursor.fetchall()
+        
+        # Group topics by category
+        categorized_topics = {}
+        for topic_data in topics_data:
+            category_id = topic_data['category_id']
+            category_name = topic_data['category_name']
+            
+            if category_id not in categorized_topics:
+                categorized_topics[category_id] = {
+                    'name': category_name,
+                    'display_order': topic_data['category_display_order'],
+                    'topics': []
+                }
+            
+            categorized_topics[category_id]['topics'].append(self._dict_to_topic(topic_data))
+        
+        # Sort by category display order (lowest first)
+        sorted_categories = sorted(categorized_topics.items(), key=lambda x: x[1]['display_order'])
+        return dict(sorted_categories)
     
     # ----- BY ID ----- #
     @db_connection
@@ -75,9 +105,17 @@ class TopicModel:
     @db_connection
     def create_topic(self, cursor, slug, title, description, user_id, category_id=1, is_published=False):
         try:
+            # Get the next available display order for this category
             cursor.execute(
-                'INSERT INTO topic (slug, title, description, category_id, user_id, is_published) VALUES (?, ?, ?, ?, ?, ?)',
-                (slug, title, description, category_id, user_id, 1 if is_published else 0)
+                'SELECT COALESCE(MAX(display_order), -1) FROM topic WHERE category_id = ?',
+                (category_id,)
+            )
+            result = cursor.fetchone()
+            next_display_order = (result[0] or -1) + 1
+            
+            cursor.execute(
+                'INSERT INTO topic (slug, title, description, category_id, user_id, is_published, display_order) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                (slug, title, description, category_id, user_id, 1 if is_published else 0, next_display_order)
             )
             return cursor.lastrowid
         except Exception as e:

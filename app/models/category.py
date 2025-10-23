@@ -22,7 +22,10 @@ class CategoryModel:
     def create(self, cursor, name, display_order=None):
         try:
             if display_order is None:
-                display_order = self.get_next_available_display_order()
+                # Auto-assign to the end
+                cursor.execute('SELECT COALESCE(MAX(display_order), -1) FROM category')
+                result = cursor.fetchone()
+                display_order = (result[0] or -1) + 1
             
             cursor.execute(
                 'INSERT INTO category (name, display_order) VALUES (?, ?)',
@@ -82,7 +85,7 @@ class CategoryModel:
     def get_topics_by_category(self, cursor):
         cursor.execute('''
             SELECT c.id as category_id, c.name as category_name, c.display_order,
-                   GROUP_CONCAT(t.id) as topic_ids
+                GROUP_CONCAT(t.id) as topic_ids
             FROM category c
             LEFT JOIN topic t ON c.id = t.category_id AND t.is_published = 1
             GROUP BY c.id
@@ -99,11 +102,14 @@ class CategoryModel:
             if category_data['topic_ids']:
                 topic_ids = [int(id) for id in category_data['topic_ids'].split(',')]
                 placeholders = ','.join(['?'] * len(topic_ids))
+                
+                # FIX: Order topics by display_order, then title
                 cursor.execute(f'''
                     SELECT * FROM topic 
                     WHERE id IN ({placeholders}) 
-                    ORDER BY title
+                    ORDER BY display_order, title
                 ''', topic_ids)
+                
                 topics_data = cursor.fetchall()
                 
                 from app.models.topic import TopicModel

@@ -35,6 +35,56 @@
         {% block content %}{% endblock %}
     </main>
 
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <h3>LookUp</h3>
+                <p>Your go-to place for organized programming references, cheat sheets, and quick guides.</p>
+            </div>
+            
+            <div class="footer-links">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="{{ url_for('home.index') }}">All Cheat Sheets</a></li>
+                    <li><a href="#">Popular Topics</a></li>
+                    <li><a href="#">New Additions</a></li>
+                    <li><a href="#">API Reference</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-links">
+                <h4>Help</h4>
+                <ul>
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">Getting Started</a></li>
+                    <li><a href="#">Contribute</a></li>
+                    <li><a href="#">Report Issue</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-links">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="footer-copyright">
+                &copy; 2025 LookUp. All rights reserved.
+            </div>
+            <div class="footer-social">
+                <a href="#" aria-label="GitHub">GitHub</a>
+                <a href="#" aria-label="Twitter">Twitter</a>
+                <a href="#" aria-label="Discord">Discord</a>
+            </div>
+        </div>
+    </footer>
+
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
