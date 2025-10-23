@@ -14,58 +14,50 @@
     </div>
 </div>
 
-<div class="sections-list">
+<div class="sections-list" id="sections-list">
     {% for section in sections %}
     <div class="section-card" data-section-id="{{ section.id }}">
         <div class="section-header">
-            <h3>{{ section.title }}</h3>
+            <div class="section-handle">
+                <span class="handle-icon">⋮⋮</span>
+                <h3>{{ section.title }}</h3>
+            </div>
             <div class="section-actions">
                 <button class="btn btn-secondary add-item-btn" data-section-id="{{ section.id }}">Add Item</button>
                 <button class="btn btn-secondary edit-section-btn" data-section-id="{{ section.id }}">Edit</button>
                 <button class="btn btn-danger delete-section-btn" data-section-id="{{ section.id }}">Delete</button>
             </div>
         </div>
-        
-        <div class="items-list">
+
+        <div class="items-list" id="items-list-{{ section.id }}">
             {% if section.items %}
-                <div class="items-header">
-                    <h4>Items ({{ section.items|length }})</h4>
-                </div>
-                {% for item in section.items %}
-                <div class="item-card" data-item-id="{{ item.id }}">
-                    <div class="item-header">
+            <div class="items-header">
+                <h4>Items ({{ section.items|length }})</h4>
+            </div>
+            {% for item in section.items %}
+            <div class="item-card" data-item-id="{{ item.id }}">
+                <div class="item-header">
+                    <div class="item-handle">
+                        <span class="handle-icon">⋮⋮</span>
                         <div class="item-title">
                             <h5>{{ item.title }}</h5>
-                            <span class="item-type {{ item.item_type }}">{{ item.item_type }}</span>
-                        </div>
-                        <div class="item-actions">
-                            <a href="{{ url_for('admin.edit_item', item_id=item.id) }}" class="btn btn-sm btn-secondary">Edit</a>
-                            <a href="{{ url_for('admin.delete_item', item_id=item.id) }}" 
-                               class="btn btn-sm btn-danger" 
-                               onclick="return confirm('Delete this item?')">Delete</a>
                         </div>
                     </div>
-                    
-                    {% if item.description %}
-                    <p class="item-description">{{ item.description }}</p>
-                    {% endif %}
-                    
-                    {% if item.url %}
-                    <div class="item-url">
-                        <a href="{{ item.url }}" target="_blank" class="card-link">{{ item.url }}</a>
+                    <div class="item-actions">
+                        <a href="{{ url_for('admin.edit_item', item_id=item.id) }}" class="btn btn-sm btn-secondary">Edit</a>
+                        <a href="{{ url_for('admin.delete_item', item_id=item.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this item?')">Delete</a>
                     </div>
-                    {% endif %}
-                    
-                    {% if item.code %}
-                    <div class="item-code">
-                        <pre><code>{{ item.code }}</code></pre>
-                    </div>
-                    {% endif %}
                 </div>
-                {% endfor %}
+
+                <!-- Show preview of markdown content -->
+                <div class="item-preview">
+                    {{ item.markdown_content[:200] }}{% if item.markdown_content|length > 200 %}...{% endif %}
+                </div>
+            </div>
+            {% endfor %}
             {% else %}
             <div class="empty-items">
-                <p>No items in this section yet.</p>
+                <p>No items in this section yet. Drag items here or click "Add Item".</p>
             </div>
             {% endif %}
         </div>
@@ -78,156 +70,234 @@
     {% endfor %}
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const topicIdElement = document.getElementById('topic-data');
-    const topicId = topicIdElement ? topicIdElement.getAttribute('data-topic-id') : null;
-    
-    if (!topicId) {
-        console.error('Topic ID not found');
-        return;
-    }
+    document.addEventListener('DOMContentLoaded', function () {
+        const topicIdElement = document.getElementById('topic-data');
+        const topicId = topicIdElement ? topicIdElement.getAttribute('data-topic-id') : null;
 
-    // -- Add Section -- //
-    const addSectionBtn = document.getElementById('add-section-btn');
-    if (addSectionBtn) {
-        addSectionBtn.addEventListener('click', function() {
-            const title = prompt('Enter section title:');
-            if (title && title.trim()) {
-                fetch("{{ url_for('admin.api_new_section') }}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        topic_id: parseInt(topicId),
-                        title: title.trim()
+        if (!topicId) {
+            console.error('Topic ID not found');
+            return;
+        }
+
+        // -- SECTION DRAG & DROP -- //
+        const sectionsList = document.getElementById('sections-list');
+        if (sectionsList) {
+            const sectionSortable = Sortable.create(sectionsList, {
+                handle: '.section-handle .handle-icon',
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                onEnd: function(evt) {
+                    const sectionIds = Array.from(sectionsList.querySelectorAll('.section-card'))
+                        .map(card => card.getAttribute('data-section-id'));
+                    
+                    fetch("{{ url_for('admin.api_reorder_sections') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            topic_id: parseInt(topicId),
+                            order: sectionIds
+                        })
                     })
-                })
-                .then(function(response) {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(function(data) {
-                    if (data.success) {
-                        location.reload();
-                    } else {
-                        alert('Error creating section: ' + (data.error || 'Unknown error'));
-                    }
-                })
-                .catch(function(error) {
-                    console.error('Error:', error);
-                    alert('Error creating section. Please check the console for details.');
-                });
-            }
-        });
-    }
-
-    // -- Add item to section - Redirect to form page -- //
-    var addItemButtons = document.querySelectorAll('.add-item-btn');
-    addItemButtons.forEach(function(button) {
-        button.addEventListener('click', function() {
-            var sectionId = this.getAttribute('data-section-id');
-            window.location.href = "{{ url_for('admin.new_item', section_id=0) }}".replace('0', sectionId);
-        });
-    });
-
-    // -- Edit Section -- //
-    var editButtons = document.querySelectorAll('.edit-section-btn');
-    editButtons.forEach(function(button) {
-        button.addEventListener('click', function() {
-            var sectionId = this.getAttribute('data-section-id');
-            var sectionCard = this.closest('.section-card');
-            var currentTitle = sectionCard.querySelector('h3').textContent;
-            var newTitle = prompt('Edit section title:', currentTitle);
-            
-            if (newTitle && newTitle.trim() && newTitle !== currentTitle) {
-                fetch("{{ url_for('admin.api_update_section') }}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        section_id: parseInt(sectionId),
-                        title: newTitle.trim(),
-                        display_order: 0
-                    })
-                })
-                .then(function(response) {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(function(data) {
-                    if (data.success) {
-                        sectionCard.querySelector('h3').textContent = newTitle.trim();
-                        alert('Section updated successfully!');
-                    } else {
-                        alert('Error updating section: ' + (data.error || 'Unknown error'));
-                    }
-                })
-                .catch(function(error) {
-                    console.error('Error:', error);
-                    alert('Error updating section. Please check the console for details.');
-                });
-            }
-        });
-    });
-
-    // -- Delete Section -- //
-    var deleteButtons = document.querySelectorAll('.delete-section-btn');
-    deleteButtons.forEach(function(button) {
-        button.addEventListener('click', function() {
-            var sectionId = this.getAttribute('data-section-id');
-            var sectionCard = this.closest('.section-card');
-            var sectionTitle = sectionCard.querySelector('h3').textContent;
-            
-            if (confirm('Are you sure you want to delete the section "' + sectionTitle + '" and all its items? This action cannot be undone.')) {
-                fetch("{{ url_for('admin.api_delete_section') }}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        section_id: parseInt(sectionId)
-                    })
-                })
-                .then(function(response) {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(function(data) {
-                    if (data.success) {
-                        sectionCard.remove();
-                        
-                        var sectionsList = document.querySelector('.sections-list');
-                        var remainingSections = sectionsList.querySelectorAll('.section-card');
-                        if (remainingSections.length === 0) {
-                            sectionsList.innerHTML = `
-                                <div class="empty-state">
-                                    <h2>No sections yet</h2>
-                                    <p>Add your first section to start building this cheat sheet.</p>
-                                </div>
-                            `;
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            alert('Error reordering sections: ' + (data.error || 'Unknown error'));
+                            // Optionally revert the sort
+                            sectionSortable.sort(sectionIds);
                         }
-                        
-                        alert('Section deleted successfully!');
-                    } else {
-                        alert('Error deleting section: ' + (data.error || 'Unknown error'));
-                    }
-                })
-                .catch(function(error) {
-                    console.error('Error:', error);
-                    alert('Error deleting section. Please check the console for details.');
-                });
-            }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error reordering sections. Please check the console.');
+                    });
+                }
+            });
+        }
+
+        // -- ITEM DRAG & DROP FOR EACH SECTION -- //
+        document.querySelectorAll('[id^="items-list-"]').forEach(itemsList => {
+            const sectionId = itemsList.id.replace('items-list-', '');
+            
+            const itemSortable = Sortable.create(itemsList, {
+                handle: '.item-handle .handle-icon',
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                onEnd: function(evt) {
+                    const itemIds = Array.from(itemsList.querySelectorAll('.item-card'))
+                        .map(card => card.getAttribute('data-item-id'));
+                    
+                    fetch("{{ url_for('admin.api_reorder_items') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            section_id: parseInt(sectionId),
+                            order: itemIds
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            alert('Error reordering items: ' + (data.error || 'Unknown error'));
+                            // Optionally revert the sort
+                            itemSortable.sort(itemIds);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error reordering items. Please check the console.');
+                    });
+                }
+            });
+        });
+
+        // -- Add Section -- //
+        const addSectionBtn = document.getElementById('add-section-btn');
+        if (addSectionBtn) {
+            addSectionBtn.addEventListener('click', function () {
+                const title = prompt('Enter section title:');
+                if (title && title.trim()) {
+                    fetch("{{ url_for('admin.api_new_section') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            topic_id: parseInt(topicId),
+                            title: title.trim()
+                        })
+                    })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            alert('Error creating section: ' + (data.error || 'Unknown error'));
+                        }
+                    })
+                    .catch(function (error) {
+                        console.error('Error:', error);
+                        alert('Error creating section. Please check the console for details.');
+                    });
+                }
+            });
+        }
+
+        // -- Add item to section - Redirect to form page -- //
+        var addItemButtons = document.querySelectorAll('.add-item-btn');
+        addItemButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                var sectionId = this.getAttribute('data-section-id');
+                window.location.href = "{{ url_for('admin.new_item', section_id=0) }}".replace('0', sectionId);
+            });
+        });
+
+        // -- Edit Section -- //
+        var editButtons = document.querySelectorAll('.edit-section-btn');
+        editButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                var sectionId = this.getAttribute('data-section-id');
+                var sectionCard = this.closest('.section-card');
+                var currentTitle = sectionCard.querySelector('h3').textContent;
+                var newTitle = prompt('Edit section title:', currentTitle);
+
+                if (newTitle && newTitle.trim() && newTitle !== currentTitle) {
+                    fetch("{{ url_for('admin.api_update_section') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            section_id: parseInt(sectionId),
+                            title: newTitle.trim(),
+                            display_order: 0
+                        })
+                    })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (data.success) {
+                            sectionCard.querySelector('h3').textContent = newTitle.trim();
+                            alert('Section updated successfully!');
+                        } else {
+                            alert('Error updating section: ' + (data.error || 'Unknown error'));
+                        }
+                    })
+                    .catch(function (error) {
+                        console.error('Error:', error);
+                        alert('Error updating section. Please check the console for details.');
+                    });
+                }
+            });
+        });
+
+        // -- Delete Section -- //
+        var deleteButtons = document.querySelectorAll('.delete-section-btn');
+        deleteButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                var sectionId = this.getAttribute('data-section-id');
+                var sectionCard = this.closest('.section-card');
+                var sectionTitle = sectionCard.querySelector('h3').textContent;
+
+                if (confirm('Are you sure you want to delete the section "' + sectionTitle + '" and all its items? This action cannot be undone.')) {
+                    fetch("{{ url_for('admin.api_delete_section') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            section_id: parseInt(sectionId)
+                        })
+                    })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (data.success) {
+                            sectionCard.remove();
+
+                            var sectionsList = document.querySelector('.sections-list');
+                            var remainingSections = sectionsList.querySelectorAll('.section-card');
+                            if (remainingSections.length === 0) {
+                                sectionsList.innerHTML = `
+                                    <div class="empty-state">
+                                        <h2>No sections yet</h2>
+                                        <p>Add your first section to start building this cheat sheet.</p>
+                                    </div>
+                                `;
+                            }
+
+                            alert('Section deleted successfully!');
+                        } else {
+                            alert('Error deleting section: ' + (data.error || 'Unknown error'));
+                        }
+                    })
+                    .catch(function (error) {
+                        console.error('Error:', error);
+                        alert('Error deleting section. Please check the console for details.');
+                    });
+                }
+            });
         });
     });
-});
 </script>
 {% endblock %}

@@ -59,12 +59,11 @@ class Schema:
             CREATE TABLE IF NOT EXISTS section_item (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
-                description TEXT,
-                url TEXT,
-                code TEXT,
-                item_type TEXT DEFAULT 'default',
+                markdown_content TEXT NOT NULL,
                 display_order INTEGER DEFAULT 0,
                 section_id INTEGER NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (section_id) REFERENCES section (id) ON DELETE CASCADE
             )
         ''')
