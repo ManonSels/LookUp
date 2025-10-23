@@ -2,6 +2,7 @@ from flask_login import UserMixin
 from .database import db_connection, verify_password
 
 class UserModel(UserMixin):
+    # ----- BY ID ----- #
     @db_connection
     def get_by_id(self, cursor, user_id):
         cursor.execute('SELECT * FROM user WHERE id = ?', (user_id,))
@@ -12,6 +13,7 @@ class UserModel(UserMixin):
         
         return self._dict_to_user(user_data)
     
+    # ----- BY USERNAME ----- #
     @db_connection
     def get_by_username(self, cursor, username):
         cursor.execute('SELECT * FROM user WHERE username = ?', (username,))
@@ -22,6 +24,7 @@ class UserModel(UserMixin):
         
         return self._dict_to_user(user_data)
     
+    # ----- CREATE USER ----- #
     @db_connection
     def create_user(self, cursor, username, email, password, is_admin=False):
         from .database import hash_password
@@ -37,14 +40,19 @@ class UserModel(UserMixin):
             print(f"Error creating user: {e}")
             return None
     
+    # ----- ALL USERS ----- #
     @db_connection
     def get_all_users(self, cursor):
         cursor.execute('SELECT * FROM user ORDER BY username')
         users_data = cursor.fetchall()
         return [self._dict_to_user(user) for user in users_data]
     
+    # ----- CHECK PASSWORD ----- #
+    def check_password(self, password):
+        return verify_password(password, self.password_hash)
+    
+    # ----- CONVERT DB ROW TO USER OBJECT ----- #
     def _dict_to_user(self, user_data):
-        """Convert database row to User object"""
         user = UserModel()
         user.id = user_data['id']
         user.username = user_data['username']
@@ -54,5 +62,3 @@ class UserModel(UserMixin):
         user.created_at = user_data['created_at']
         return user
     
-    def check_password(self, password):
-        return verify_password(password, self.password_hash)

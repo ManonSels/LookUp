@@ -1,5 +1,6 @@
 from .database import db_connection
 
+
 class SectionItemModel:
     @db_connection
     def get_by_section(self, cursor, section_id):
@@ -42,7 +43,6 @@ class SectionItemModel:
         return True
     
     def _dict_to_item(self, item_data):
-        """Convert database row to SectionItem object"""
         item = SectionItemModel()
         item.id = item_data['id']
         item.title = item_data['title']

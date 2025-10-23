@@ -3,9 +3,9 @@ from flask_login import login_user, logout_user, login_required, current_user
 from app.models.user import UserModel
 from urllib.parse import urlparse as url_parse
 
-# Create blueprint (note the variable name)
 auth_bp = Blueprint('auth', __name__)
 
+# ----- LOGIN ROUTE ----- #
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
@@ -30,6 +30,7 @@ def login():
     
     return render_template('login.html')
 
+# ----- LOGOUT ROUTE ----- #
 @auth_bp.route('/logout')
 @login_required
 def logout():

@@ -46,11 +46,11 @@ document.addEventListener('DOMContentLoaded', function() {
             handle: '.handle',
             animation: 150,
             onEnd: function(evt) {
-                // Get new order
+                // -- Get new order -- //
                 const categoryIds = Array.from(categoriesList.querySelectorAll('.category-card'))
                     .map(card => card.getAttribute('data-category-id'));
                 
-                // Update order in database
+                // -- Update order in db -- //
                 fetch("{{ url_for('admin.api_reorder_categories') }}", {
                     method: 'POST',
                     headers: {
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Update display numbers
+                        // -- Update display numbers -- //
                         updateDisplayOrders();
                     } else {
                         alert('Error updating category order');
@@ -84,52 +84,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-
-<style>
-.categories-list {
-    max-width: 600px;
-}
-
-.category-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 0.5rem;
-    cursor: move;
-}
-
-.category-card:hover {
-    border-color: #cbd5e0;
-}
-
-.category-info h3 {
-    margin: 0 0 0.25rem 0;
-    color: #2d3748;
-}
-
-.category-meta {
-    font-size: 0.875rem;
-    color: #718096;
-}
-
-.category-actions {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-}
-
-.handle {
-    cursor: grab;
-    background: #f7fafc;
-    border: 1px solid #e2e8f0;
-}
-
-.handle:active {
-    cursor: grabbing;
-}
-</style>
 {% endblock %}

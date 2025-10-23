@@ -17,8 +17,10 @@
     
     <div class="form-group">
         <label for="display_order">Display Order</label>
-        <input type="number" id="display_order" name="display_order" value="{{ category.display_order if category else 0 }}" min="0">
-        <small>Lower numbers appear first. You can also reorder via drag & drop.</small>
+        <input type="number" id="display_order" name="display_order" 
+               value="{{ category.display_order if category else '' }}" 
+               min="0" placeholder="Auto-assigned if empty">
+        <small>Lower numbers appear first. Leave empty for automatic ordering.</small>
     </div>
     
     <div class="form-actions">

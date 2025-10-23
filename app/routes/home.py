@@ -6,6 +6,7 @@ from app.models.category import CategoryModel
 
 bp = Blueprint('home', __name__)
 
+# ----- HOME ROUTE ----- #
 @bp.route('/')
 def index():
     category_model = CategoryModel()
@@ -13,6 +14,7 @@ def index():
     
     return render_template('home.html', categorized_topics=categorized_topics)
 
+# ----- TOPIC SLUG ----- #
 @bp.route('/<topic_slug>')
 def cheatsheet(topic_slug):
     topic_model = TopicModel()

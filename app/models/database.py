@@ -3,6 +3,7 @@ import os
 from flask import g
 import hashlib
 
+# ----- DB CONNECTION ----- #
 class DBConnection:
     def __enter__(self):
         db_path = os.path.join(os.path.dirname(__file__), '../../instance/site.db')
@@ -22,7 +23,6 @@ class DBConnection:
             self.conn.close()
         return False
 
-
 def db_connection(func):
     def wrapper(self, *args, **kwargs):
         with DBConnection() as cursor:
@@ -30,9 +30,11 @@ def db_connection(func):
             return result
     return wrapper
 
+# ----- HASH PASSWORD ----- #
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
+# ----- VERIFY PASSWORD ----- #
 def verify_password(password, password_hash):
     """Verify a stored password against one provided by user"""
     return hash_password(password) == password_hash

@@ -71,9 +71,9 @@ class Schema:
         
         print("Database tables created successfully!")
     
+    # ----- CREATE ADMIN USER ----- #
     @db_connection
     def create_admin_user(self, cursor):
-        """Create admin user if it doesn't exist"""
         from .database import hash_password
         
         cursor.execute('SELECT id FROM user WHERE username = ?', ('admin',))
@@ -87,7 +87,7 @@ class Schema:
             )
             print("Admin user created!")
     
+    # ----- INITIALIZE ENTIRE DB ----- #
     def init_db(self):
-        """Initialize the entire database"""
         self.create_tables()
         self.create_admin_user()

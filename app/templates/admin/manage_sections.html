@@ -3,7 +3,7 @@
 {% block title %}Manage Sections - {{ topic.title }}{% endblock %}
 
 {% block content %}
-<!-- Add this hidden div to store the topic ID -->
+<!-- storing topic id -->
 <div id="topic-data" data-topic-id="{{ topic.id }}" style="display: none;"></div>
 
 <div class="admin-header">
@@ -26,7 +26,6 @@
             </div>
         </div>
         
-        <!-- Items for this section -->
         <div class="items-list">
             {% if section.items %}
                 <div class="items-header">
@@ -72,7 +71,6 @@
         </div>
     </div>
     {% else %}
-    <!-- This else block is for when there are NO sections at all -->
     <div class="empty-state">
         <h2>No sections yet</h2>
         <p>Add your first section to start building this cheat sheet.</p>
@@ -82,7 +80,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Get topic ID from data attribute
     const topicIdElement = document.getElementById('topic-data');
     const topicId = topicIdElement ? topicIdElement.getAttribute('data-topic-id') : null;
     
@@ -91,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    // Add Section
+    // -- Add Section -- //
     const addSectionBtn = document.getElementById('add-section-btn');
     if (addSectionBtn) {
         addSectionBtn.addEventListener('click', function() {
@@ -128,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Add Item to Section - Redirect to form page
+    // -- Add item to section - Redirect to form page -- //
     var addItemButtons = document.querySelectorAll('.add-item-btn');
     addItemButtons.forEach(function(button) {
         button.addEventListener('click', function() {
@@ -137,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Edit Section (Fully implemented)
+    // -- Edit Section -- //
     var editButtons = document.querySelectorAll('.edit-section-btn');
     editButtons.forEach(function(button) {
         button.addEventListener('click', function() {
@@ -180,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Delete Section (Fully implemented)
+    // -- Delete Section -- //
     var deleteButtons = document.querySelectorAll('.delete-section-btn');
     deleteButtons.forEach(function(button) {
         button.addEventListener('click', function() {

@@ -42,12 +42,14 @@ def manage_categories():
     categories = category_model.get_all()
     return render_template('admin/categories.html', categories=categories)
 
+# ------- NEW CATEGORY ------- #
 @admin_bp.route('/category/new', methods=['GET', 'POST'])
 @admin_required
 def new_category():
     if request.method == 'POST':
         name = request.form.get('name')
-        display_order = request.form.get('display_order', 0, type=int)
+        # Don't require display_order - will be auto-assigned
+        display_order = request.form.get('display_order', type=int)
         
         if not name:
             flash('Category name is required', 'error')
@@ -64,6 +66,7 @@ def new_category():
     
     return render_template('admin/edit_category.html')
 
+# ------- EDIT CATEGORY ------- #
 @admin_bp.route('/category/<int:category_id>/edit', methods=['GET', 'POST'])
 @admin_required
 def edit_category(category_id):
@@ -86,12 +89,13 @@ def edit_category(category_id):
     
     return render_template('admin/edit_category.html', category=category)
 
+
+# ------- DELETE CATEGORY ------- #
 @admin_bp.route('/category/<int:category_id>/delete')
 @admin_required
 def delete_category(category_id):
     category_model = CategoryModel()
     
-    # Check if category has topics
     topic_model = TopicModel()
     topics = topic_model.get_by_category(category_id)
     
@@ -105,79 +109,19 @@ def delete_category(category_id):
     
     return redirect(url_for('admin.manage_categories'))
 
-# API for reordering categories
+# ------ REORDER CATEGORIES ------ #
 @admin_bp.route('/api/categories/reorder', methods=['POST'])
 @admin_required
 def api_reorder_categories():
     order_data = request.json.get('order', [])
     
     category_model = CategoryModel()
-    for index, category_id in enumerate(order_data):
-        # First get the current category to preserve the name
-        category = category_model.get_by_id(category_id)
-        if category:
-            # Update only the display_order, keep the existing name
-            category_model.update(category_id, category.name, index)
     
-    return jsonify({'success': True})
-
-# --------- SETUP CATEGORIES --------- #
-@admin_bp.route('/setup-categories')
-@admin_required
-def setup_categories():
-    """Create default categories and assign existing topics"""
-    try:
-        # Use your DBConnection directly
-        from app.models.database import DBConnection
-        
-        with DBConnection() as cursor:
-            # Create default categories
-            default_categories = [
-                ('Programming', 0),
-                ('Tools', 1), 
-                ('Linux', 2),
-                ('General', 3)
-            ]
-            
-            for name, order in default_categories:
-                cursor.execute('INSERT OR IGNORE INTO category (name, display_order) VALUES (?, ?)', (name, order))
-            
-            # Assign all existing topics to General category
-            cursor.execute('UPDATE topic SET category_id = (SELECT id FROM category WHERE name = "General") WHERE category_id IS NULL OR category_id = ""')
-            
-            # Count how many topics were updated
-            cursor.execute('SELECT changes()')
-            topics_updated = cursor.fetchone()[0]
-            
-            flash(f"✅ Categories setup completed! Updated {topics_updated} topics.", 'success')
-            
-    except Exception as e:
-        flash(f'❌ Error setting up categories: {e}', 'error')
+    if category_model.reorder_categories(order_data):
+        return jsonify({'success': True})
+    else:
+        return jsonify({'success': False, 'error': 'Failed to reorder categories'})
     
-    return redirect(url_for('admin.dashboard'))
-
-
-# --------- CATEGORIES ORDER --------- #
-@admin_bp.route('/category-order')
-@admin_required
-def manage_category_order():
-    """Manage the display order of categories"""
-    topic_model = TopicModel()
-    categories = topic_model.get_all_categories()
-    
-    return render_template('admin/category_order.html', categories=categories)
-
-@admin_bp.route('/api/category-order/update', methods=['POST'])
-@admin_required
-def api_update_category_order():
-    """Update category order (simple text-based system)"""
-    new_order = request.json.get('order', [])
-    
-    # For now, we'll just store this in a simple way
-    # In a real app, you'd want to store this in a separate table
-    flash(f"Category order updated: {', '.join(new_order)}", 'success')
-    return jsonify({'success': True})
-
 
 # ------------------------------------------- #
 # ----------------- TOPICS ------------------ #
@@ -188,13 +132,13 @@ def api_update_category_order():
 @admin_required
 def new_topic():
     topic_model = TopicModel()
-    categories = topic_model.get_all_categories()  # This now returns (id, name) tuples
+    categories = topic_model.get_all_categories()
     
     if request.method == 'POST':
         slug = request.form.get('slug')
         title = request.form.get('title')
         description = request.form.get('description')
-        category_id = request.form.get('category_id', 1, type=int)  # Get category ID
+        category_id = request.form.get('category_id', 1, type=int)
         is_published = 'is_published' in request.form
         
         if not slug or not title:
@@ -237,7 +181,6 @@ def edit_topic(topic_id):
             flash('Error updating topic', 'error')
     
     return render_template('admin/edit_topic.html', topic=topic, categories=categories)
-
 
 # -------- DELETE TOPIC -------- #
 @admin_bp.route('/topic/<int:topic_id>/delete')
@@ -286,13 +229,13 @@ def api_new_section():
     section_model = SectionModel()
     section_id = section_model.create_section(title, topic_id)
     
-    # if section_id:
-    #     return jsonify({'success': True, 'section_id': section_id})
-    # else:
-    #     return jsonify({'success': False, 'error': 'Failed to create section'})
+    if section_id:
+        return jsonify({'success': True, 'section_id': section_id})
+    else:
+        return jsonify({'success': False, 'error': 'Failed to create section'})
 
 
-# -------- SECTION UPDATE -------- #
+# -------- UPDATE SECTION -------- #
 @admin_bp.route('/api/section/update', methods=['POST'])
 @admin_required
 def api_update_section():
@@ -301,22 +244,22 @@ def api_update_section():
     display_order = request.json.get('display_order', 0)
     
     section_model = SectionModel()
-    # if section_model.update_section(section_id, title, display_order):
-    #     return jsonify({'success': True})
-    # else:
-    #     return jsonify({'success': False, 'error': 'Failed to update section'})
+    if section_model.update_section(section_id, title, display_order):
+        return jsonify({'success': True})
+    else:
+        return jsonify({'success': False, 'error': 'Failed to update section'})
 
-# -------- SECTION DELETE -------- #
+# -------- DELETE SECTION -------- #
 @admin_bp.route('/api/section/delete', methods=['POST'])
 @admin_required
 def api_delete_section():
     section_id = request.json.get('section_id')
     
     section_model = SectionModel()
-    # if section_model.delete_section(section_id):
-    #     return jsonify({'success': True})
-    # else:
-    #     return jsonify({'success': False, 'error': 'Failed to delete section'})
+    if section_model.delete_section(section_id):
+        return jsonify({'success': True})
+    else:
+        return jsonify({'success': False, 'error': 'Failed to delete section'})
 
 # ------------------------------------------- #
 # ------------------ ITEMS ------------------ #
@@ -333,10 +276,10 @@ def api_new_item():
     item_model = SectionItemModel()
     item_id = item_model.create_item(title, section_id, item_type=item_type)
     
-    # if item_id:
-    #     return jsonify({'success': True, 'item_id': item_id})
-    # else:
-    #     return jsonify({'success': False, 'error': 'Failed to create item'})
+    if item_id:
+        return jsonify({'success': True, 'item_id': item_id})
+    else:
+        return jsonify({'success': False, 'error': 'Failed to create item'})
     
 # -------- NEW ITEM  -------- #
 @admin_bp.route('/section/<int:section_id>/item/new', methods=['GET', 'POST'])
@@ -377,7 +320,6 @@ def new_item(section_id):
             flash('Error creating item', 'error')
     
     return render_template('admin/edit_item.html', section=section)
-
 
 # ------- EDIT ITEM  ------- #
 @admin_bp.route('/item/<int:item_id>/edit', methods=['GET', 'POST'])
@@ -432,37 +374,3 @@ def delete_item(item_id):
         flash('Error deleting item', 'error')
     
     return redirect(url_for('admin.manage_sections', topic_id=section.topic_id))
-
-
-
-
-
-
-
-@admin_bp.route('/fix-database')
-@admin_required
-def fix_database():
-    """Fix the database schema conflict"""
-    try:
-        from app.models.database import DBConnection
-        
-        with DBConnection() as cursor:
-            # Add category text column if it doesn't exist
-            try:
-                cursor.execute('ALTER TABLE topic ADD COLUMN category TEXT')
-            except:
-                pass  # Column might already exist
-            
-            # Copy category_id values to category text (temporary fix)
-            cursor.execute('''
-                UPDATE topic 
-                SET category = (SELECT name FROM category WHERE category.id = topic.category_id)
-                WHERE category_id IS NOT NULL
-            ''')
-            
-            flash("✅ Database fixed! Now using text categories.", 'success')
-            
-    except Exception as e:
-        flash(f'❌ Error: {e}', 'error')
-    
-    return redirect(url_for('admin.dashboard'))

@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}QuickRef{% endblock %}</title>
+    <title>{% block title %}LookUp{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <a href="{{ url_for('home.index') }}" class="nav-logo">QuickRef</a>
+            <a href="{{ url_for('home.index') }}" class="nav-logo">LookUp</a>
             <div class="nav-links">
                 {% if current_user.is_authenticated and current_user.is_admin %}
                     <a href="{{ url_for('admin.dashboard') }}" class="nav-link">Admin</a>
