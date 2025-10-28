@@ -14,7 +14,12 @@
         <h2 class="category-header">{{ category_name }}</h2>
         <div class="topics-grid">
             {% for topic in category_data.topics %}
-            <a href="{{ url_for('home.cheatsheet', topic_slug=topic.slug) }}" class="topic-card">
+            <a href="{{ url_for('home.cheatsheet', topic_slug=topic.slug) }}" class="topic-card" 
+               style="background-color: var(--topic-color); border-left: 4px solid var(--topic-color);"
+               onmouseover="this.style.borderColor='var(--topic-color)'; this.style.boxShadow='0 8px 25px var(--topic-color)33';"
+               onmouseout="this.style.borderColor='var(--topic-color)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)';"
+               data-color-light="{{ topic.card_color_light if topic.card_color_light else '#ffffff' }}"
+               data-color-dark="{{ topic.card_color_dark if topic.card_color_dark else '#1a1a1a' }}">
                 <h3>{{ topic.title }}</h3>
                 <p>{{ topic.description }}</p>
             </a>
@@ -28,4 +33,30 @@
     <p>Check back later or contact an admin to add content.</p>
 </div>
 {% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set topic colors based on current theme
+    function updateTopicColors() {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        document.querySelectorAll('.topic-card').forEach(card => {
+            const lightColor = card.getAttribute('data-color-light') || '#ffffff';
+            const darkColor = card.getAttribute('data-color-dark') || '#1a1a1a';
+            const color = isDark ? darkColor : lightColor;
+            card.style.setProperty('--topic-color', color);
+        });
+    }
+    
+    // Initial update
+    updateTopicColors();
+    
+    // Update when theme changes
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function() {
+            setTimeout(updateTopicColors, 100);
+        });
+    }
+});
+</script>
 {% endblock %}

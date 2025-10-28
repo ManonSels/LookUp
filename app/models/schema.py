@@ -37,6 +37,8 @@ class Schema:
                 display_order INTEGER DEFAULT 0,
                 is_published BOOLEAN DEFAULT 0,
                 user_id INTEGER NOT NULL,
+                card_color_light TEXT DEFAULT '#ffffff',
+                card_color_dark TEXT DEFAULT '#1a1a1a',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES user (id),

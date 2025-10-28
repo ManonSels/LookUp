@@ -21,7 +21,10 @@
         
         <div class="topics-list" id="topics-list-{{ category_id }}">
             {% for topic in category_data.topics %}
-            <div class="topic-card admin draggable" data-topic-id="{{ topic.id }}" data-category-id="{{ category_id }}">
+            <div class="topic-card admin draggable" data-topic-id="{{ topic.id }}" data-category-id="{{ category_id }}"
+                 data-color-light="{{ topic.card_color_light if topic.card_color_light else '#ffffff' }}"
+                 data-color-dark="{{ topic.card_color_dark if topic.card_color_dark else '#1a1a1a' }}">
+                <div class="topic-color-indicator" id="color-indicator-{{ topic.id }}"></div>
                 <div class="topic-handle">
                     <span class="handle-icon">⋮⋮</span>
                 </div>
@@ -65,10 +68,35 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Initializing drag and drop...');
     
+    // Set topic colors based on current theme
+    function updateTopicColors() {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        document.querySelectorAll('.topic-card.admin').forEach(card => {
+            const lightColor = card.getAttribute('data-color-light') || '#ffffff';
+            const darkColor = card.getAttribute('data-color-dark') || '#1a1a1a';
+            const color = isDark ? darkColor : lightColor;
+            
+            // Update the color indicator
+            const colorIndicator = card.querySelector('.topic-color-indicator');
+            if (colorIndicator) {
+                colorIndicator.style.backgroundColor = color;
+            }
+        });
+    }
+    
+    // Initial color update
+    updateTopicColors();
+    
+    // Update when theme changes
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function() {
+            setTimeout(updateTopicColors, 100);
+        });
+    }
+    
     // Store the original category of each topic when drag starts
     let originalCategories = new Map();
-    
-    // Initialize Sortable for each category
     const topicLists = document.querySelectorAll('.topics-list');
     
     topicLists.forEach(topicList => {
@@ -102,8 +130,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const oldCategoryId = originalCategories.get(topicId);
                 
                 console.log(`Topic ${topicId} moved from category ${oldCategoryId} to ${newCategoryId}`);
-                
-                // Always update category when moving between lists
                 updateTopicCategory(topicId, newCategoryId, oldCategoryId);
             },
             
@@ -114,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateTopicOrderInCategory(categoryId);
             },
             
-            // When drag ends (for cleanup)
+            // When drag ends
             onEnd: function(evt) {
                 const topicId = evt.item.getAttribute('data-topic-id');
                 originalCategories.delete(topicId);
@@ -144,20 +170,14 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 console.log(`Successfully updated topic ${topicId} category`);
-                // Update the topic's data attribute
                 const topicCard = document.querySelector(`[data-topic-id="${topicId}"]`);
                 if (topicCard) {
                     topicCard.setAttribute('data-category-id', newCategoryId);
                 }
-                
-                // Update category counts
                 updateCategoryCounts();
-                
-                // Update order in the new category
                 updateTopicOrderInCategory(newCategoryId);
-                
-                // Show success message
                 showFlashMessage('Topic category updated successfully!', 'success');
+
             } else {
                 throw new Error(data.error || 'Unknown error');
             }
@@ -165,8 +185,6 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('Error changing topic category:', error);
             showFlashMessage('Error changing topic category: ' + error.message, 'error');
-            
-            // Revert the drag visually
             revertTopicToCategory(topicId, oldCategoryId);
         });
     }
@@ -234,17 +252,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showFlashMessage(message, type) {
-        // Create a flash message element
         const flashDiv = document.createElement('div');
         flashDiv.className = `alert alert-${type}`;
         flashDiv.textContent = message;
         
-        // Insert after the admin header
         const adminHeader = document.querySelector('.admin-header');
         if (adminHeader) {
             adminHeader.parentNode.insertBefore(flashDiv, adminHeader.nextSibling);
             
-            // Remove after 3 seconds
             setTimeout(() => {
                 flashDiv.remove();
             }, 3000);

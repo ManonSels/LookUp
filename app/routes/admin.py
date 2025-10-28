@@ -28,8 +28,6 @@ def admin_required(f):
 def dashboard():
     topic_model = TopicModel()
     category_model = CategoryModel()
-    
-    # Get topics grouped by category
     categorized_topics = topic_model.get_all_grouped_by_category()
     categories = category_model.get_all()
     
@@ -55,7 +53,6 @@ def manage_categories():
 def new_category():
     if request.method == 'POST':
         name = request.form.get('name')
-        # Don't require display_order - will be auto-assigned
         display_order = request.form.get('display_order', type=int)
         
         if not name:
@@ -147,12 +144,14 @@ def new_topic():
         description = request.form.get('description')
         category_id = request.form.get('category_id', 1, type=int)
         is_published = 'is_published' in request.form
+        card_color_light = request.form.get('card_color_light', '#ffffff')
+        card_color_dark = request.form.get('card_color_dark', '#1a1a1a')
         
         if not slug or not title:
             flash('Slug and title are required', 'error')
             return render_template('admin/edit_topic.html', categories=categories)
         
-        topic_id = topic_model.create_topic(slug, title, description, current_user.id, category_id, is_published)
+        topic_id = topic_model.create_topic(slug, title, description, current_user.id, category_id, is_published, card_color_light, card_color_dark)
         
         if topic_id:
             flash('Topic created successfully!', 'success')
@@ -180,8 +179,10 @@ def edit_topic(topic_id):
         description = request.form.get('description')
         category_id = request.form.get('category_id', 1, type=int)
         is_published = 'is_published' in request.form
+        card_color_light = request.form.get('card_color_light', '#ffffff')
+        card_color_dark = request.form.get('card_color_dark', '#1a1a1a')
         
-        if topic_model.update_topic(topic_id, slug, title, description, category_id, is_published):
+        if topic_model.update_topic(topic_id, slug, title, description, category_id, is_published, card_color_light, card_color_dark):
             flash('Topic updated successfully!', 'success')
             return redirect(url_for('admin.dashboard'))
         else:
@@ -206,13 +207,11 @@ def delete_topic(topic_id):
 @admin_required
 def api_reorder_topics():
     try:
-        # Use the DBConnection context manager directly
         from app.models.database import DBConnection
         with DBConnection() as cursor:
             category_id = request.json.get('category_id')
             order_data = request.json.get('order', [])
             
-            # Update display_order for topics in this specific category
             for display_order, topic_id in enumerate(order_data):
                 cursor.execute(
                     'UPDATE topic SET display_order = ? WHERE id = ? AND category_id = ?',
@@ -228,7 +227,6 @@ def api_reorder_topics():
 @admin_required
 def api_change_topic_category():
     try:
-        # Use the DBConnection context manager directly
         from app.models.database import DBConnection
         with DBConnection() as cursor:
             topic_id = request.json.get('topic_id')
@@ -318,10 +316,8 @@ def api_reorder_sections():
     order_data = request.json.get('order', [])
     
     try:
-        # Use the DBConnection context manager directly
         from app.models.database import DBConnection
         with DBConnection() as cursor:
-            # Update display_order for all sections in this topic
             for display_order, section_id in enumerate(order_data):
                 cursor.execute(
                     'UPDATE section SET display_order = ? WHERE id = ? AND topic_id = ?',
@@ -340,10 +336,8 @@ def api_reorder_items():
     order_data = request.json.get('order', [])
     
     try:
-        # Use the DBConnection context manager directly
         from app.models.database import DBConnection
         with DBConnection() as cursor:
-            # Update display_order for all items in this section
             for display_order, item_id in enumerate(order_data):
                 cursor.execute(
                     'UPDATE section_item SET display_order = ? WHERE id = ? AND section_id = ?',
@@ -352,6 +346,25 @@ def api_reorder_items():
         return jsonify({'success': True})
     except Exception as e:
         print(f"Error reordering items: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+# ------ CHANGE ITEM SECTION ------ #
+@admin_bp.route('/api/items/change_section', methods=['POST'])
+@admin_required
+def api_change_item_section():
+    try:
+        from app.models.database import DBConnection
+        with DBConnection() as cursor:
+            item_id = request.json.get('item_id')
+            section_id = request.json.get('section_id')
+            
+            cursor.execute(
+                'UPDATE section_item SET section_id = ? WHERE id = ?',
+                (section_id, item_id)
+            )
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Error changing item section: {e}")
         return jsonify({'success': False, 'error': str(e)})
 
 # ------------------------------------------- #

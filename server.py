@@ -3,7 +3,6 @@ from app.models.schema import Schema
 
 app = create_app()
 
-# Initialize database on startup
 with app.app_context():
     schema = Schema()
     schema.init_db()

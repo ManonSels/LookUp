@@ -20,7 +20,6 @@ def cheatsheet(topic_slug):
     topic_model = TopicModel()
     section_model = SectionModel()
     item_model = SectionItemModel()
-    
     topic = topic_model.get_by_slug(topic_slug)
     if not topic:
         return "Topic not found", 404

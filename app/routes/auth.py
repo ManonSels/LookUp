@@ -14,7 +14,6 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        
         user_model = UserModel()
         user = user_model.get_by_username(username)
         

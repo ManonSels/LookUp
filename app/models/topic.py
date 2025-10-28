@@ -53,7 +53,6 @@ class TopicModel:
         ''')
         topics_data = cursor.fetchall()
         
-        # Group topics by category
         categorized_topics = {}
         for topic_data in topics_data:
             category_id = topic_data['category_id']
@@ -68,7 +67,6 @@ class TopicModel:
             
             categorized_topics[category_id]['topics'].append(self._dict_to_topic(topic_data))
         
-        # Sort by category display order (lowest first)
         sorted_categories = sorted(categorized_topics.items(), key=lambda x: x[1]['display_order'])
         return dict(sorted_categories)
     
@@ -103,9 +101,8 @@ class TopicModel:
     
     # ----- CREATE TOPIC ----- #
     @db_connection
-    def create_topic(self, cursor, slug, title, description, user_id, category_id=1, is_published=False):
+    def create_topic(self, cursor, slug, title, description, user_id, category_id=1, is_published=False, card_color_light='#ffffff', card_color_dark='#1a1a1a'):
         try:
-            # Get the next available display order for this category
             cursor.execute(
                 'SELECT COALESCE(MAX(display_order), -1) FROM topic WHERE category_id = ?',
                 (category_id,)
@@ -114,8 +111,8 @@ class TopicModel:
             next_display_order = (result[0] or -1) + 1
             
             cursor.execute(
-                'INSERT INTO topic (slug, title, description, category_id, user_id, is_published, display_order) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                (slug, title, description, category_id, user_id, 1 if is_published else 0, next_display_order)
+                'INSERT INTO topic (slug, title, description, category_id, user_id, is_published, display_order, card_color_light, card_color_dark) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                (slug, title, description, category_id, user_id, 1 if is_published else 0, next_display_order, card_color_light, card_color_dark)
             )
             return cursor.lastrowid
         except Exception as e:
@@ -124,11 +121,11 @@ class TopicModel:
 
     # ----- UPDATE TOPIC ----- #
     @db_connection
-    def update_topic(self, cursor, topic_id, slug, title, description, category_id, is_published):
+    def update_topic(self, cursor, topic_id, slug, title, description, category_id, is_published, card_color_light='#ffffff', card_color_dark='#1a1a1a'):
         try:
             cursor.execute(
-                'UPDATE topic SET slug = ?, title = ?, description = ?, category_id = ?, is_published = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-                (slug, title, description, category_id, 1 if is_published else 0, topic_id)
+                'UPDATE topic SET slug = ?, title = ?, description = ?, category_id = ?, is_published = ?, card_color_light = ?, card_color_dark = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                (slug, title, description, category_id, 1 if is_published else 0, card_color_light, card_color_dark, topic_id)
             )
             return True
         except Exception as e:
@@ -166,6 +163,8 @@ class TopicModel:
         topic.category_name = topic_data.get('category_name', 'General')  # From JOIN
         topic.is_published = bool(topic_data['is_published'])
         topic.user_id = topic_data['user_id']
+        topic.card_color_light = topic_data.get('card_color_light', '#ffffff')
+        topic.card_color_dark = topic_data.get('card_color_dark', '#1a1a1a')
         topic.created_at = topic_data['created_at']
         topic.updated_at = topic_data['updated_at']
         return topic

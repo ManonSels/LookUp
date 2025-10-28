@@ -5,12 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}LookUp{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <script>
+        // Apply theme immediately to prevent flash
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            // Add admin page class if on admin route
+            if (window.location.pathname.startsWith('/admin')) {
+                document.body.classList.add('admin-page');
+            }
+        })();
+    </script>
 </head>
-<body>
+<body class="{% if request.path.startswith('/admin') %}admin-page{% endif %}">
     <nav class="navbar">
         <div class="nav-container">
             <a href="{{ url_for('home.index') }}" class="nav-logo">LookUp</a>
             <div class="nav-links">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <span id="themeIcon">🌙</span>
+                </button>
                 {% if current_user.is_authenticated and current_user.is_admin %}
                     <a href="{{ url_for('admin.dashboard') }}" class="nav-link">Admin</a>
                     <a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a>
@@ -23,7 +38,7 @@
         </div>
     </nav>
 
-    <main class="main-content">
+    <main class="main-content {% if request.path.startswith('/admin') %}admin-content{% endif %}">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -35,6 +50,7 @@
         {% block content %}{% endblock %}
     </main>
 
+    {% if not request.path.startswith('/admin') %}
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-brand">
@@ -84,7 +100,33 @@
             </div>
         </div>
     </footer>
+    {% endif %}
 
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        // Theme toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = document.getElementById('themeIcon');
+            const html = document.documentElement;
+            
+            function setTheme(theme) {
+                html.setAttribute('data-theme', theme);
+                localStorage.setItem('theme', theme);
+                themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+            }
+            
+            // Initialize theme
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            setTheme(currentTheme);
+            
+            // Toggle theme on button click
+            themeToggle.addEventListener('click', function() {
+                const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                setTheme(newTheme);
+            });
+        });
+    </script>
+    
+    {% block scripts %}{% endblock %}
 </body>
 </html>

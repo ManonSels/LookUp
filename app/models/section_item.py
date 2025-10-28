@@ -1,6 +1,7 @@
 from .database import db_connection
 
 class SectionItemModel:
+    # ----- BY SECTION ----- #
     @db_connection
     def get_by_section(self, cursor, section_id):
         cursor.execute(
@@ -10,6 +11,7 @@ class SectionItemModel:
         items_data = cursor.fetchall()
         return [self._dict_to_item(item) for item in items_data]
     
+    # ----- BY ID ----- #
     @db_connection
     def get_by_id(self, cursor, item_id):
         cursor.execute('SELECT * FROM section_item WHERE id = ?', (item_id,))
@@ -20,6 +22,7 @@ class SectionItemModel:
         
         return self._dict_to_item(item_data)
     
+    # ----- CREATE ITEM ----- #
     @db_connection
     def create_item(self, cursor, title, section_id, markdown_content="", display_order=0):
         cursor.execute(
@@ -28,6 +31,7 @@ class SectionItemModel:
         )
         return cursor.lastrowid
     
+    # ----- UPDATE ITEM ----- #
     @db_connection
     def update_item(self, cursor, item_id, title, markdown_content, display_order):
         cursor.execute(
@@ -36,11 +40,13 @@ class SectionItemModel:
         )
         return True
     
+    # ----- DELETE ITEM ----- #
     @db_connection
     def delete_item(self, cursor, item_id):
         cursor.execute('DELETE FROM section_item WHERE id = ?', (item_id,))
         return True
     
+    # ----- CONVERT DB ROW TO SECTION OBJECT ----- #
     def _dict_to_item(self, item_data):
         item = SectionItemModel()
         item.id = item_data['id']

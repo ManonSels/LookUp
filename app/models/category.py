@@ -22,7 +22,6 @@ class CategoryModel:
     def create(self, cursor, name, display_order=None):
         try:
             if display_order is None:
-                # Auto-assign to the end
                 cursor.execute('SELECT COALESCE(MAX(display_order), -1) FROM category')
                 result = cursor.fetchone()
                 display_order = (result[0] or -1) + 1
@@ -103,7 +102,6 @@ class CategoryModel:
                 topic_ids = [int(id) for id in category_data['topic_ids'].split(',')]
                 placeholders = ','.join(['?'] * len(topic_ids))
                 
-                # FIX: Order topics by display_order, then title
                 cursor.execute(f'''
                     SELECT * FROM topic 
                     WHERE id IN ({placeholders}) 

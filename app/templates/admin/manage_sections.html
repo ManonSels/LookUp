@@ -3,7 +3,6 @@
 {% block title %}Manage Sections - {{ topic.title }}{% endblock %}
 
 {% block content %}
-<!-- storing topic id -->
 <div id="topic-data" data-topic-id="{{ topic.id }}" style="display: none;"></div>
 
 <div class="admin-header">
@@ -29,11 +28,8 @@
             </div>
         </div>
 
-        <div class="items-list" id="items-list-{{ section.id }}">
+        <div class="items-list" id="items-list-{{ section.id }}" data-section-id="{{ section.id }}">
             {% if section.items %}
-            <div class="items-header">
-                <h4>Items ({{ section.items|length }})</h4>
-            </div>
             {% for item in section.items %}
             <div class="item-card" data-item-id="{{ item.id }}">
                 <div class="item-header">
@@ -48,15 +44,13 @@
                         <a href="{{ url_for('admin.delete_item', item_id=item.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this item?')">Delete</a>
                     </div>
                 </div>
-
-                <!-- Show preview of markdown content -->
                 <div class="item-preview">
                     {{ item.markdown_content[:200] }}{% if item.markdown_content|length > 200 %}...{% endif %}
                 </div>
             </div>
             {% endfor %}
             {% else %}
-            <div class="empty-items">
+            <div class="empty-items" data-no-drag>
                 <p>No items in this section yet. Drag items here or click "Add Item".</p>
             </div>
             {% endif %}
@@ -124,41 +118,130 @@
             const sectionId = itemsList.id.replace('items-list-', '');
             
             const itemSortable = Sortable.create(itemsList, {
+                group: {
+                    name: 'items',
+                    pull: true,
+                    put: true
+                },
                 handle: '.item-handle .handle-icon',
                 animation: 150,
                 ghostClass: 'sortable-ghost',
                 chosenClass: 'sortable-chosen',
+                filter: '[data-no-drag]',
                 onEnd: function(evt) {
-                    const itemIds = Array.from(itemsList.querySelectorAll('.item-card'))
-                        .map(card => card.getAttribute('data-item-id'));
+                    const fromSectionId = evt.from.getAttribute('data-section-id');
+                    const toSectionId = evt.to.getAttribute('data-section-id');
+                    const itemId = evt.item.getAttribute('data-item-id');
                     
-                    fetch("{{ url_for('admin.api_reorder_items') }}", {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            section_id: parseInt(sectionId),
-                            order: itemIds
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (!data.success) {
-                            alert('Error reordering items: ' + (data.error || 'Unknown error'));
-                            // Optionally revert the sort
-                            itemSortable.sort(itemIds);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Error reordering items. Please check the console.');
-                    });
+                    // If item moved to a different section, update its section_id
+                    if (fromSectionId !== toSectionId) {
+                        updateItemSection(itemId, toSectionId, fromSectionId);
+                    } else {
+                        // Same section, just update order
+                        updateItemOrderInSection(toSectionId);
+                    }
+                    
+                    // Update empty state visibility for both sections
+                    updateEmptyState(fromSectionId);
+                    updateEmptyState(toSectionId);
+                },
+                onAdd: function(evt) {
+                    const toSectionId = evt.to.getAttribute('data-section-id');
+                    updateEmptyState(toSectionId);
+                },
+                onRemove: function(evt) {
+                    const fromSectionId = evt.from.getAttribute('data-section-id');
+                    updateEmptyState(fromSectionId);
                 }
             });
+            
+            // Initialize empty state
+            updateEmptyState(sectionId);
         });
 
-        // -- Add Section -- //
+        // Function to update empty state visibility
+        function updateEmptyState(sectionId) {
+            const itemsList = document.getElementById(`items-list-${sectionId}`);
+            if (!itemsList) return;
+            
+            const itemCards = itemsList.querySelectorAll('.item-card');
+            const emptyState = itemsList.querySelector('.empty-items');
+            
+            if (itemCards.length === 0) {
+                // Show empty state
+                if (emptyState) {
+                    emptyState.style.display = 'flex';
+                } else {
+                    // Create empty state if it doesn't exist
+                    const newEmptyState = document.createElement('div');
+                    newEmptyState.className = 'empty-items';
+                    newEmptyState.setAttribute('data-no-drag', '');
+                    newEmptyState.innerHTML = '<p>No items in this section yet. Drag items here or click "Add Item".</p>';
+                    itemsList.appendChild(newEmptyState);
+                }
+            } else {
+                // Hide empty state
+                if (emptyState) {
+                    emptyState.style.display = 'none';
+                }
+            }
+        }
+
+        // Add this new function to handle section changes:
+        function updateItemSection(itemId, newSectionId, oldSectionId) {
+            fetch("{{ url_for('admin.api_change_item_section') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    item_id: parseInt(itemId),
+                    section_id: parseInt(newSectionId)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    alert('Error moving item: ' + (data.error || 'Unknown error'));
+                    // Optionally revert the move
+                } else {
+                    // Update order in the new section
+                    updateItemOrderInSection(newSectionId);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error moving item. Please check the console.');
+            });
+        }
+
+        function updateItemOrderInSection(sectionId) {
+            const itemsList = document.getElementById(`items-list-${sectionId}`);
+            const itemIds = Array.from(itemsList.querySelectorAll('.item-card'))
+                .map(card => card.getAttribute('data-item-id'));
+            
+            fetch("{{ url_for('admin.api_reorder_items') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    section_id: parseInt(sectionId),
+                    order: itemIds
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    console.error('Error updating item order:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        // -- ADD SECTION -- //
         const addSectionBtn = document.getElementById('add-section-btn');
         if (addSectionBtn) {
             addSectionBtn.addEventListener('click', function () {
@@ -195,7 +278,7 @@
             });
         }
 
-        // -- Add item to section - Redirect to form page -- //
+        // -- ADD ITEM TO SECTION -- //
         var addItemButtons = document.querySelectorAll('.add-item-btn');
         addItemButtons.forEach(function (button) {
             button.addEventListener('click', function () {
@@ -204,7 +287,7 @@
             });
         });
 
-        // -- Edit Section -- //
+        // -- EDIT SECTION -- //
         var editButtons = document.querySelectorAll('.edit-section-btn');
         editButtons.forEach(function (button) {
             button.addEventListener('click', function () {
@@ -247,7 +330,7 @@
             });
         });
 
-        // -- Delete Section -- //
+        // -- DELETE SECTION -- //
         var deleteButtons = document.querySelectorAll('.delete-section-btn');
         deleteButtons.forEach(function (button) {
             button.addEventListener('click', function () {

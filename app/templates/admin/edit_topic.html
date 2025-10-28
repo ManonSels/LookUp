@@ -7,7 +7,7 @@
     <div class="form-group">
         <label for="slug">Slug:</label>
         <input type="text" id="slug" name="slug" value="{{ topic.slug if topic }}" required>
-        <small>URL-friendly name (e.g., "python-basics")</small>
+        <small>URL-friendly name (e.g., "example-text")</small>
     </div>
     
     <div class="form-group">
@@ -35,9 +35,39 @@
         <textarea id="description" name="description" rows="3">{{ topic.description if topic }}</textarea>
     </div>
     
-    <div class="form-group checkbox">
-        <input type="checkbox" id="is_published" name="is_published" {{ 'checked' if topic and topic.is_published }}>
-        <label for="is_published">Publish this topic</label>
+    <div class="form-group">
+        <label>Card Background Colors:</label>
+        
+        <div class="color-picker-group">
+            <label for="card_color_light">Light Theme:</label>
+            <input type="color" id="card_color_light" name="card_color_light" 
+                   value="{{ topic.card_color_light if topic and topic.card_color_light else '#ffffff' }}" 
+                   class="color-picker-input">
+            <div class="color-picker-preview" id="colorPreviewLight">
+                {{ topic.card_color_light if topic and topic.card_color_light else '#ffffff' }}
+            </div>
+        </div>
+        
+        <div class="color-picker-group" style="margin-top: 0.5rem;">
+            <label for="card_color_dark">Dark Theme:</label>
+            <input type="color" id="card_color_dark" name="card_color_dark" 
+                   value="{{ topic.card_color_dark if topic and topic.card_color_dark else '#1a1a1a' }}" 
+                   class="color-picker-input">
+            <div class="color-picker-preview" id="colorPreviewDark">
+                {{ topic.card_color_dark if topic and topic.card_color_dark else '#1a1a1a' }}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Replace the checkbox with toggle button -->
+    <div class="publish-toggle">
+        <span class="publish-toggle-label">Publication Status:</span>
+        <input type="checkbox" id="is_published" name="is_published" 
+               class="toggle-input" {{ 'checked' if topic and topic.is_published }}>
+        <button type="button" class="toggle-button {{ 'published' if topic and topic.is_published else 'draft' }}" 
+                id="publishToggle">
+            {{ 'Published' if topic and topic.is_published else 'Draft' }}
+        </button>
     </div>
     
     <div class="form-actions">
@@ -45,4 +75,29 @@
         <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Cancel</a>
     </div>
 </form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const colorInputDark = document.getElementById('card_color_dark');
+    const colorPreviewDark = document.getElementById('colorPreviewDark');
+    const publishToggle = document.getElementById('publishToggle');
+    const isPublishedInput = document.getElementById('is_published');
+    
+    publishToggle.addEventListener('click', function() {
+        const isCurrentlyPublished = isPublishedInput.checked;
+        
+        if (isCurrentlyPublished) {
+            isPublishedInput.checked = false;
+            this.textContent = 'Draft';
+            this.classList.remove('published');
+            this.classList.add('draft');
+        } else {
+            isPublishedInput.checked = true;
+            this.textContent = 'Published';
+            this.classList.remove('draft');
+            this.classList.add('published');
+        }
+    });
+});
+</script>
 {% endblock %}
