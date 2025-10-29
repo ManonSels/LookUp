@@ -12,11 +12,11 @@
 
 <div class="cheatsheet-content">
     {% for section in topic.sections %}
-    <section class="section">
+    <section class="section" id="section-{{ section.id }}">
         <h2>{{ section.title }}</h2>
         <div class="cards-grid">
             {% for item in section.items %}
-            <div class="card">
+            <div class="card" id="item-{{ item.id }}">
                 <h3>{{ item.title }}</h3>
                 <div class="card-content">
                     {{ item.markdown_content|markdown|safe }}
@@ -26,5 +26,7 @@
         </div>
     </section>
     {% endfor %}
+    
+    
 </div>
 {% endblock %}

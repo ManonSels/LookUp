@@ -5,6 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}LookUp{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <style>
+    /* Remove all transition styles - they're causing the flash */
+    .search-modal {
+        z-index: 1000;
+    }
+
+    /* Scroll margins for proper navigation */
+    .section {
+        scroll-margin-top: 90px;
+    }
+
+    .card {
+        scroll-margin-top: 90px;
+    }
+</style>
     <script>
         // Apply theme immediately to prevent flash
         (function() {
@@ -19,10 +34,51 @@
     </script>
 </head>
 <body class="{% if request.path.startswith('/admin') %}admin-page{% endif %}">
+    <!-- Page Loading Indicator -->
+    <div id="pageLoading" class="page-loading">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Search Modal -->
+    <div id="searchModal" class="search-modal" style="display: none;">
+        <div class="search-modal-content">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input type="text" id="searchInput" placeholder="Search for topics, commands, code..." autocomplete="off">
+                    <span class="search-icon">🔍</span>
+                    <button id="closeSearch" class="close-search">&times;</button>
+                </div>
+            </div>
+            <div class="search-body">
+                <div class="search-sidebar" id="searchSidebar">
+                    <div class="topics-list" id="topicsList">
+                        <!-- Topics will be loaded here -->
+                    </div>
+                </div>
+                <div class="search-content" id="searchContent">
+                    <div class="search-content-empty">
+                        <p>Select a topic to view its contents</p>
+                    </div>
+                    <div class="search-results" id="searchResults" style="display: none;">
+                        <!-- Search results will be shown here -->
+                    </div>
+                    <div class="topic-content" id="topicContent" style="display: none;">
+                        <!-- Topic sections/items will be shown here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <nav class="navbar">
         <div class="nav-container">
             <a href="{{ url_for('home.index') }}" class="nav-logo">LookUp</a>
             <div class="nav-links">
+                <!-- Search Button -->
+                <button class="nav-link search-trigger" id="searchTrigger">
+                    <span>🔍 Search</span>
+                </button>
+                
                 <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
                     <span id="themeIcon">🌙</span>
                 </button>
@@ -38,7 +94,7 @@
         </div>
     </nav>
 
-    <main class="main-content {% if request.path.startswith('/admin') %}admin-content{% endif %}">
+    <main class="main-content {% if request.path.startswith('/admin') %}admin-content{% endif %}" id="mainContent">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -102,30 +158,9 @@
     </footer>
     {% endif %}
 
-    <script>
-        // Theme toggle functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const themeToggle = document.getElementById('themeToggle');
-            const themeIcon = document.getElementById('themeIcon');
-            const html = document.documentElement;
-            
-            function setTheme(theme) {
-                html.setAttribute('data-theme', theme);
-                localStorage.setItem('theme', theme);
-                themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
-            }
-            
-            // Initialize theme
-            const currentTheme = localStorage.getItem('theme') || 'light';
-            setTheme(currentTheme);
-            
-            // Toggle theme on button click
-            themeToggle.addEventListener('click', function() {
-                const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-                setTheme(newTheme);
-            });
-        });
-    </script>
+    <!-- Include the external JavaScript file -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    
     
     {% block scripts %}{% endblock %}
 </body>

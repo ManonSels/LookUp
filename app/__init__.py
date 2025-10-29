@@ -15,10 +15,12 @@ def create_app():
     from app.routes.home import bp as home_bp
     from app.routes.auth import auth_bp
     from app.routes.admin import admin_bp
+    from app.routes.search import search_bp  # ADD THIS LINE
     
     app.register_blueprint(home_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(admin_bp, url_prefix='/admin')
+    app.register_blueprint(search_bp)  # ADD THIS LINE
     
     @app.template_filter('markdown')
     def render_markdown(text):

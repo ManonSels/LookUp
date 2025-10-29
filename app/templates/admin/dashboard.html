@@ -65,33 +65,32 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
+function updateAdminTopicColors() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.querySelectorAll('.topic-card.admin').forEach(card => {
+        const lightColor = card.getAttribute('data-color-light') || '#ffffff';
+        const darkColor = card.getAttribute('data-color-dark') || '#1a1a1a';
+        const color = isDark ? darkColor : lightColor;
+        
+        // Update the color indicator
+        const colorIndicator = card.querySelector('.topic-color-indicator');
+        if (colorIndicator) {
+            colorIndicator.style.backgroundColor = color;
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Initializing drag and drop...');
     
-    // Set topic colors based on current theme
-    function updateTopicColors() {
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        document.querySelectorAll('.topic-card.admin').forEach(card => {
-            const lightColor = card.getAttribute('data-color-light') || '#ffffff';
-            const darkColor = card.getAttribute('data-color-dark') || '#1a1a1a';
-            const color = isDark ? darkColor : lightColor;
-            
-            // Update the color indicator
-            const colorIndicator = card.querySelector('.topic-color-indicator');
-            if (colorIndicator) {
-                colorIndicator.style.backgroundColor = color;
-            }
-        });
-    }
-    
     // Initial color update
-    updateTopicColors();
+    updateAdminTopicColors();
     
     // Update when theme changes
     const themeToggle = document.getElementById('themeToggle');
     if (themeToggle) {
         themeToggle.addEventListener('click', function() {
-            setTimeout(updateTopicColors, 100);
+            setTimeout(updateAdminTopicColors, 100);
         });
     }
     
