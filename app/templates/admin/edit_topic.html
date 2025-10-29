@@ -75,29 +75,4 @@
         <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Cancel</a>
     </div>
 </form>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const colorInputDark = document.getElementById('card_color_dark');
-    const colorPreviewDark = document.getElementById('colorPreviewDark');
-    const publishToggle = document.getElementById('publishToggle');
-    const isPublishedInput = document.getElementById('is_published');
-    
-    publishToggle.addEventListener('click', function() {
-        const isCurrentlyPublished = isPublishedInput.checked;
-        
-        if (isCurrentlyPublished) {
-            isPublishedInput.checked = false;
-            this.textContent = 'Draft';
-            this.classList.remove('published');
-            this.classList.add('draft');
-        } else {
-            isPublishedInput.checked = true;
-            this.textContent = 'Published';
-            this.classList.remove('draft');
-            this.classList.add('published');
-        }
-    });
-});
-</script>
 {% endblock %}
