@@ -442,6 +442,7 @@ def new_item(section_id):
     if request.method == 'POST':
         title = request.form.get('title')
         markdown_content = request.form.get('markdown_content', '')
+        card_size = request.form.get('card_size', 'normal')  # ADD THIS
         
         if not title:
             flash('Title is required', 'error')
@@ -451,7 +452,8 @@ def new_item(section_id):
         item_id = item_model.create_item(
             title=title,
             section_id=section_id,
-            markdown_content=markdown_content
+            markdown_content=markdown_content,
+            card_size=card_size  # ADD THIS
         )
         
         if item_id:
@@ -479,12 +481,13 @@ def edit_item(item_id):
     if request.method == 'POST':
         title = request.form.get('title')
         markdown_content = request.form.get('markdown_content', '')
+        card_size = request.form.get('card_size', 'normal')  # ADD THIS
         
         if not title:
             flash('Title is required', 'error')
             return render_template('admin/edit_item.html', section=section, item=item)
         
-        if item_model.update_item(item_id, title, markdown_content, item.display_order):
+        if item_model.update_item(item_id, title, markdown_content, item.display_order, card_size):  # UPDATE
             flash('Item updated successfully!', 'success')
             return redirect(url_for('admin.manage_sections', topic_id=section.topic_id))
         else:
