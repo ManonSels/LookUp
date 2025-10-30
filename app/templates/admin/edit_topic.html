@@ -3,7 +3,7 @@
 {% block title %}{{ 'Edit' if topic else 'New' }} Topic - Admin{% endblock %}
 
 {% block content %}
-<form method="POST" class="topic-form">
+<form method="POST" class="topic-form" enctype="multipart/form-data">
     <div class="form-group">
         <label for="slug">Slug:</label>
         <input type="text" id="slug" name="slug" value="{{ topic.slug if topic }}" required>
@@ -35,6 +35,54 @@
         <textarea id="description" name="description" rows="3">{{ topic.description if topic }}</textarea>
     </div>
     
+    <!-- LIGHT THEME LOGO UPLOAD SECTION -->
+    <div class="form-group">
+        <label for="logo_light">Light Theme Logo:</label>
+        
+        {% if topic and topic.logo_filename_light %}
+        <div class="current-logo" style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px; border: 1px solid var(--border-color);">
+            <img src="{{ url_for('static', filename='uploads/logos/' + topic.logo_filename_light) }}" 
+                 alt="Current light theme logo" 
+                 style="width: 48px; height: 48px; object-fit: contain; border-radius: 8px;">
+            <div style="flex: 1;">
+                <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: var(--text-secondary);">Current light theme logo</p>
+                <button type="button" class="btn btn-danger btn-sm remove-logo-btn" data-theme="light"
+                        style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">
+                    ✕ Remove Light Logo
+                </button>
+            </div>
+        </div>
+        <input type="hidden" id="remove_logo_light" name="remove_logo_light" value="false">
+        {% endif %}
+        
+        <input type="file" id="logo_light" name="logo_light" accept=".png,.jpg,.jpeg,.gif,.svg">
+        <small>Upload a logo for light theme (PNG, JPG, GIF, SVG). Will be resized to max 64x64 pixels.</small>
+    </div>
+    
+    <!-- DARK THEME LOGO UPLOAD SECTION -->
+    <div class="form-group">
+        <label for="logo_dark">Dark Theme Logo:</label>
+        
+        {% if topic and topic.logo_filename_dark %}
+        <div class="current-logo" style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px; border: 1px solid var(--border-color);">
+            <img src="{{ url_for('static', filename='uploads/logos/' + topic.logo_filename_dark) }}" 
+                 alt="Current dark theme logo" 
+                 style="width: 48px; height: 48px; object-fit: contain; border-radius: 8px;">
+            <div style="flex: 1;">
+                <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: var(--text-secondary);">Current dark theme logo</p>
+                <button type="button" class="btn btn-danger btn-sm remove-logo-btn" data-theme="dark"
+                        style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">
+                    ✕ Remove Dark Logo
+                </button>
+            </div>
+        </div>
+        <input type="hidden" id="remove_logo_dark" name="remove_logo_dark" value="false">
+        {% endif %}
+        
+        <input type="file" id="logo_dark" name="logo_dark" accept=".png,.jpg,.jpeg,.gif,.svg">
+        <small>Upload a logo for dark theme (PNG, JPG, GIF, SVG). Will be resized to max 64x64 pixels.</small>
+    </div>
+    
     <div class="form-group">
         <label>Card Background Colors:</label>
         
@@ -59,11 +107,11 @@
         </div>
     </div>
     
-    <!-- Replace the checkbox with toggle button -->
+    <!-- PUBLISH TOGGLE -->
     <div class="publish-toggle">
         <span class="publish-toggle-label">Publication Status:</span>
         <input type="checkbox" id="is_published" name="is_published" 
-               class="toggle-input" {{ 'checked' if topic and topic.is_published }}>
+               class="toggle-input" {{ 'checked' if topic and topic.is_published else '' }}>
         <button type="button" class="toggle-button {{ 'published' if topic and topic.is_published else 'draft' }}" 
                 id="publishToggle">
             {{ 'Published' if topic and topic.is_published else 'Draft' }}
@@ -75,4 +123,55 @@
         <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Cancel</a>
     </div>
 </form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Update color previews
+    const colorInputLight = document.getElementById('card_color_light');
+    const colorPreviewLight = document.getElementById('colorPreviewLight');
+    const colorInputDark = document.getElementById('card_color_dark');
+    const colorPreviewDark = document.getElementById('colorPreviewDark');
+    
+    if (colorInputLight && colorPreviewLight) {
+        colorInputLight.addEventListener('input', function() {
+            colorPreviewLight.textContent = this.value;
+            colorPreviewLight.style.backgroundColor = this.value;
+        });
+        // Set initial preview
+        colorPreviewLight.style.backgroundColor = colorInputLight.value;
+    }
+    
+    if (colorInputDark && colorPreviewDark) {
+        colorInputDark.addEventListener('input', function() {
+            colorPreviewDark.textContent = this.value;
+            colorPreviewDark.style.backgroundColor = this.value;
+        });
+        // Set initial preview
+        colorPreviewDark.style.backgroundColor = colorInputDark.value;
+    }
+
+    // Remove logo functionality for both themes
+    document.querySelectorAll('.remove-logo-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const theme = this.getAttribute('data-theme');
+            const inputId = `remove_logo_${theme}`;
+            const removeLogoInput = document.getElementById(inputId);
+            
+            if (confirm(`Are you sure you want to remove the ${theme} theme logo? This cannot be undone.`)) {
+                // Hide the current logo display
+                const currentLogoDiv = this.closest('.current-logo');
+                if (currentLogoDiv) {
+                    currentLogoDiv.style.display = 'none';
+                }
+                
+                // Set the hidden input to true so the backend knows to remove the logo
+                removeLogoInput.value = 'true';
+                
+                // Show a success message
+                alert(`${theme.charAt(0).toUpperCase() + theme.slice(1)} theme logo will be removed when you save the topic.`);
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

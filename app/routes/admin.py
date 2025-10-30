@@ -1,9 +1,12 @@
+import os
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from app.models.topic import TopicModel
 from app.models.section import SectionModel
 from app.models.section_item import SectionItemModel
 from app.models.category import CategoryModel 
+from werkzeug.utils import secure_filename
+from app.utils.upload import save_topic_logo, delete_topic_logo
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -147,11 +150,29 @@ def new_topic():
         card_color_light = request.form.get('card_color_light', '#ffffff')
         card_color_dark = request.form.get('card_color_dark', '#1a1a1a')
         
+        # Handle logo uploads
+        logo_filename_light = None
+        logo_filename_dark = None
+        
+        if 'logo_light' in request.files:
+            file = request.files['logo_light']
+            if file and file.filename:
+                logo_filename_light = save_topic_logo(file)
+                if not logo_filename_light:
+                    flash('Error uploading light theme logo', 'error')
+        
+        if 'logo_dark' in request.files:
+            file = request.files['logo_dark']
+            if file and file.filename:
+                logo_filename_dark = save_topic_logo(file)
+                if not logo_filename_dark:
+                    flash('Error uploading dark theme logo', 'error')
+        
         if not slug or not title:
             flash('Slug and title are required', 'error')
             return render_template('admin/edit_topic.html', categories=categories)
         
-        topic_id = topic_model.create_topic(slug, title, description, current_user.id, category_id, is_published, card_color_light, card_color_dark)
+        topic_id = topic_model.create_topic(slug, title, description, current_user.id, category_id, is_published, card_color_light, card_color_dark, logo_filename_light, logo_filename_dark)
         
         if topic_id:
             flash('Topic created successfully!', 'success')
@@ -181,8 +202,44 @@ def edit_topic(topic_id):
         is_published = 'is_published' in request.form
         card_color_light = request.form.get('card_color_light', '#ffffff')
         card_color_dark = request.form.get('card_color_dark', '#1a1a1a')
+        remove_logo_light = 'remove_logo_light' in request.form
+        remove_logo_dark = 'remove_logo_dark' in request.form
         
-        if topic_model.update_topic(topic_id, slug, title, description, category_id, is_published, card_color_light, card_color_dark):
+        # Handle logo uploads/removals
+        logo_filename_light = topic.logo_filename_light if hasattr(topic, 'logo_filename_light') else None
+        logo_filename_dark = topic.logo_filename_dark if hasattr(topic, 'logo_filename_dark') else None
+        
+        # Handle light theme logo
+        if remove_logo_light and logo_filename_light:
+            delete_topic_logo(logo_filename_light)
+            logo_filename_light = None
+        elif 'logo_light' in request.files:
+            file = request.files['logo_light']
+            if file and file.filename:
+                if logo_filename_light:
+                    delete_topic_logo(logo_filename_light)
+                new_logo_filename = save_topic_logo(file)
+                if new_logo_filename:
+                    logo_filename_light = new_logo_filename
+                else:
+                    flash('Error uploading light theme logo', 'error')
+        
+        # Handle dark theme logo
+        if remove_logo_dark and logo_filename_dark:
+            delete_topic_logo(logo_filename_dark)
+            logo_filename_dark = None
+        elif 'logo_dark' in request.files:
+            file = request.files['logo_dark']
+            if file and file.filename:
+                if logo_filename_dark:
+                    delete_topic_logo(logo_filename_dark)
+                new_logo_filename = save_topic_logo(file)
+                if new_logo_filename:
+                    logo_filename_dark = new_logo_filename
+                else:
+                    flash('Error uploading dark theme logo', 'error')
+        
+        if topic_model.update_topic(topic_id, slug, title, description, category_id, is_published, card_color_light, card_color_dark, logo_filename_light, logo_filename_dark):
             flash('Topic updated successfully!', 'success')
             return redirect(url_for('admin.dashboard'))
         else:

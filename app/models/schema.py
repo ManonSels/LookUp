@@ -39,6 +39,8 @@ class Schema:
                 user_id INTEGER NOT NULL,
                 card_color_light TEXT DEFAULT '#ffffff',
                 card_color_dark TEXT DEFAULT '#1a1a1a',
+                logo_filename_light TEXT,
+                logo_filename_dark TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES user (id),

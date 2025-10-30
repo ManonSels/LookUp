@@ -112,7 +112,7 @@ class CategoryModel:
                 
                 from app.models.topic import TopicModel
                 topic_model = TopicModel()
-                topics = [topic_model._dict_to_topic(topic) for topic in topics_data]
+                topics = [topic_model._dict_to_topic(topic) for topic in topics_data]  # This now includes logo_filename
             else:
                 topics = []
             

@@ -15,10 +15,38 @@
         <div class="topics-grid">
             {% for topic in category_data.topics %}
             <a href="{{ url_for('home.cheatsheet', topic_slug=topic.slug) }}" class="topic-card" 
+               style="background-color: var(--topic-color); border-left: 4px solid var(--topic-color);"
+               onmouseover="this.style.borderColor='var(--topic-color)'; this.style.boxShadow='0 8px 25px var(--topic-color)33';"
+               onmouseout="this.style.borderColor='var(--topic-color)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)';"
                data-color-light="{{ topic.card_color_light if topic.card_color_light else '#ffffff' }}"
                data-color-dark="{{ topic.card_color_dark if topic.card_color_dark else '#1a1a1a' }}">
-                <h3>{{ topic.title }}</h3>
-                <p>{{ topic.description }}</p>
+                <div style="display: flex; align-items: center; gap: 1rem; height: 100%;">
+                    <!-- Logo - Theme Specific -->
+                    <div style="flex-shrink: 0;">
+                        {% if topic.logo_filename_light or topic.logo_filename_dark %}
+                        <img class="logo-light" 
+                             src="{{ url_for('static', filename='uploads/logos/' + topic.logo_filename_light) if topic.logo_filename_light else url_for('static', filename='uploads/logos/' + topic.logo_filename_dark) }}" 
+                             alt="{{ topic.title }} logo"
+                             style="width: 48px; height: 48px; object-fit: contain; display: block;">
+                        <img class="logo-dark" 
+                             src="{{ url_for('static', filename='uploads/logos/' + topic.logo_filename_dark) if topic.logo_filename_dark else url_for('static', filename='uploads/logos/' + topic.logo_filename_light) }}" 
+                             alt="{{ topic.title }} logo"
+                             style="width: 48px; height: 48px; object-fit: contain; display: none;">
+                        {% else %}
+                        <div style="width: 48px; height: 48px; background: var(--bg-secondary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 1.5rem;">
+                            📄
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Content -->
+                    <div style="flex: 1;">
+                        <h3 style="font-size: 1.7rem; line-height: 1.3;">{{ topic.title }}</h3>
+                        {% if topic.description %}
+                        <p style="font-size: 0.95rem; line-height: 1.4; margin: 0; color: var(--text-secondary);">{{ topic.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
             </a>
             {% endfor %}
         </div>
@@ -32,29 +60,27 @@
 {% endif %}
 
 <script>
-// Update topic colors based on current theme
-function updateHomeTopicColors() {
+// Function to update logos based on theme
+function updateLogosForTheme() {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    document.querySelectorAll('.topic-card').forEach(card => {
-        const lightColor = card.getAttribute('data-color-light') || '#ffffff';
-        const darkColor = card.getAttribute('data-color-dark') || '#1a1a1a';
-        const color = isDark ? darkColor : lightColor;
-        card.style.setProperty('--topic-color', color);
-        card.style.backgroundColor = color;
+    document.querySelectorAll('.logo-light, .logo-dark').forEach(img => {
+        if (img.classList.contains('logo-light')) {
+            img.style.display = isDark ? 'none' : 'block';
+        } else if (img.classList.contains('logo-dark')) {
+            img.style.display = isDark ? 'block' : 'none';
+        }
     });
 }
 
-// Initialize on load
-document.addEventListener('DOMContentLoaded', function() {
-    updateHomeTopicColors();
-    
-    // Update when theme changes
-    const themeToggle = document.getElementById('themeToggle');
-    if (themeToggle) {
-        themeToggle.addEventListener('click', function() {
-            setTimeout(updateHomeTopicColors, 100);
-        });
-    }
-});
+// Initial update
+updateLogosForTheme();
+
+// Update when theme changes
+const themeToggle = document.getElementById('themeToggle');
+if (themeToggle) {
+    themeToggle.addEventListener('click', function() {
+        setTimeout(updateLogosForTheme, 100);
+    });
+}
 </script>
 {% endblock %}

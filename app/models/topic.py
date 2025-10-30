@@ -101,7 +101,7 @@ class TopicModel:
     
     # ----- CREATE TOPIC ----- #
     @db_connection
-    def create_topic(self, cursor, slug, title, description, user_id, category_id=1, is_published=False, card_color_light='#ffffff', card_color_dark='#1a1a1a'):
+    def create_topic(self, cursor, slug, title, description, user_id, category_id=1, is_published=False, card_color_light='#ffffff', card_color_dark='#1a1a1a', logo_filename_light=None, logo_filename_dark=None):  # UPDATE PARAMS
         try:
             cursor.execute(
                 'SELECT COALESCE(MAX(display_order), -1) FROM topic WHERE category_id = ?',
@@ -111,8 +111,8 @@ class TopicModel:
             next_display_order = (result[0] or -1) + 1
             
             cursor.execute(
-                'INSERT INTO topic (slug, title, description, category_id, user_id, is_published, display_order, card_color_light, card_color_dark) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                (slug, title, description, category_id, user_id, 1 if is_published else 0, next_display_order, card_color_light, card_color_dark)
+                'INSERT INTO topic (slug, title, description, category_id, user_id, is_published, display_order, card_color_light, card_color_dark, logo_filename_light, logo_filename_dark) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',  # UPDATE
+                (slug, title, description, category_id, user_id, 1 if is_published else 0, next_display_order, card_color_light, card_color_dark, logo_filename_light, logo_filename_dark)  # UPDATE
             )
             return cursor.lastrowid
         except Exception as e:
@@ -121,11 +121,11 @@ class TopicModel:
 
     # ----- UPDATE TOPIC ----- #
     @db_connection
-    def update_topic(self, cursor, topic_id, slug, title, description, category_id, is_published, card_color_light='#ffffff', card_color_dark='#1a1a1a'):
+    def update_topic(self, cursor, topic_id, slug, title, description, category_id, is_published, card_color_light='#ffffff', card_color_dark='#1a1a1a', logo_filename_light=None, logo_filename_dark=None):  # UPDATE PARAMS
         try:
             cursor.execute(
-                'UPDATE topic SET slug = ?, title = ?, description = ?, category_id = ?, is_published = ?, card_color_light = ?, card_color_dark = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-                (slug, title, description, category_id, 1 if is_published else 0, card_color_light, card_color_dark, topic_id)
+                'UPDATE topic SET slug = ?, title = ?, description = ?, category_id = ?, is_published = ?, card_color_light = ?, card_color_dark = ?, logo_filename_light = ?, logo_filename_dark = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',  # UPDATE
+                (slug, title, description, category_id, 1 if is_published else 0, card_color_light, card_color_dark, logo_filename_light, logo_filename_dark, topic_id)  # UPDATE
             )
             return True
         except Exception as e:
@@ -160,11 +160,13 @@ class TopicModel:
         topic.title = topic_data['title']
         topic.description = topic_data['description']
         topic.category_id = topic_data['category_id']
-        topic.category_name = topic_data.get('category_name', 'General')  # From JOIN
+        topic.category_name = topic_data.get('category_name', 'General')
         topic.is_published = bool(topic_data['is_published'])
         topic.user_id = topic_data['user_id']
         topic.card_color_light = topic_data.get('card_color_light', '#ffffff')
         topic.card_color_dark = topic_data.get('card_color_dark', '#1a1a1a')
+        topic.logo_filename_light = topic_data.get('logo_filename_light')  # UPDATE
+        topic.logo_filename_dark = topic_data.get('logo_filename_dark')    # ADD
         topic.created_at = topic_data['created_at']
         topic.updated_at = topic_data['updated_at']
         return topic
