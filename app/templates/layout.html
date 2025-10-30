@@ -158,9 +158,22 @@
     </footer>
     {% endif %}
 
-    <!-- Include the external JavaScript file -->
+    <!-- Include the external JavaScript files -->
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     
+    <!-- Admin specific scripts -->
+    {% if request.path.startswith('/admin') %}
+        <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+        <script src="{{ url_for('static', filename='js/form-handlers.js') }}"></script>
+        
+        {% if request.path == '/admin/' %}
+            <script src="{{ url_for('static', filename='js/admin-dashboard.js') }}"></script>
+        {% elif '/categories' in request.path %}
+            <script src="{{ url_for('static', filename='js/admin-categories.js') }}"></script>
+        {% elif '/sections' in request.path %}
+            <script src="{{ url_for('static', filename='js/admin-sections.js') }}"></script>
+        {% endif %}
+    {% endif %}
     
     {% block scripts %}{% endblock %}
 </body>

@@ -186,6 +186,7 @@ code {
 /* ------------------------------------------- */
 
 @media (max-width: 1200px) {
+<<<<<<< HEAD
   .topics-grid {
     grid-template-columns: repeat(3, minmax(140px, 1fr)); /* 3 cards per row */
   }
@@ -198,6 +199,60 @@ code {
 }
 
 @media (max-width: 768px) {
+=======
+    .topics-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.25rem;
+    }
+    
+    .topics-list {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .topics-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .topic-card {
+        padding: 1.25rem;
+        min-height: 90px;
+    }
+    
+    .topic-card h3 {
+        font-size: 1.1rem;
+    }
+    
+    .topic-card p {
+        font-size: 0.9rem;
+    }
+    
+    .topics-list {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .topic-card.admin.draggable {
+        padding: 0.875rem;
+        min-height: 130px;
+    }
+    
+    .topic-info h3 {
+        font-size: 0.95rem;
+    }
+    
+    .topic-info p {
+        font-size: 0.8rem;
+    }
+    
+    .cards-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
+    }
+    
+>>>>>>> 662360f0c63321bbb74c031ab92bbd841cf554b6
     /* -------- NAVIGATION --------- */
     .nav-container {
         padding: 0 1rem;
@@ -219,6 +274,7 @@ code {
         font-size: 1rem;
     }
 
+<<<<<<< HEAD
     /* -------- TOPICS GRID --------- */
     /* .topics-grid {
         grid-template-columns: 2fr;
@@ -229,6 +285,8 @@ code {
         grid-template-columns: 1fr;
     }
 
+=======
+>>>>>>> 662360f0c63321bbb74c031ab92bbd841cf554b6
     /* ------- ADMIN STYLES --------- */
     .admin-header {
         flex-direction: column;
@@ -357,6 +415,36 @@ code {
 }
 
 @media (max-width: 480px) {
+<<<<<<< HEAD
+=======
+    .topics-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .topic-card {
+        padding: 1rem;
+        min-height: 80px;
+    }
+    
+    .topic-card h3 {
+        font-size: 1rem;
+    }
+    
+    .topics-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .topic-card.admin.draggable {
+        min-height: 120px;
+    }
+    
+    .cards-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+>>>>>>> 662360f0c63321bbb74c031ab92bbd841cf554b6
     .footer {
         padding: 2rem 0 1.5rem 0;
     }

@@ -525,27 +525,28 @@ function scrollToElement(elementId, smooth = true) {
 
 // Home page specific functionality
 function initializeHomePage() {
-	// Set topic colors based on current theme
-	function updateTopicColors() {
-		const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-		document.querySelectorAll('.topic-card').forEach(card => {
-			const lightColor = card.getAttribute('data-color-light') || '#ffffff';
-			const darkColor = card.getAttribute('data-color-dark') || '#1a1a1a';
-			const color = isDark ? darkColor : lightColor;
-			card.style.setProperty('--topic-color', color);
-		});
-	}
+    // Set topic colors based on current theme
+    function updateTopicColors() {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        document.querySelectorAll('.topic-card').forEach(card => {
+            const lightColor = card.getAttribute('data-color-light') || '#ffffff';
+            const darkColor = card.getAttribute('data-color-dark') || '#1a1a1a';
+            const color = isDark ? darkColor : lightColor;
+            card.style.setProperty('--topic-color', color);
+            card.style.backgroundColor = color;
+        });
+    }
 
-	// Initial update
-	updateTopicColors();
+    // Initial update
+    updateTopicColors();
 
-	// Update when theme changes
-	const themeToggle = document.getElementById('themeToggle');
-	if (themeToggle) {
-		themeToggle.addEventListener('click', function () {
-			setTimeout(updateTopicColors, 100);
-		});
-	}
+    // Update when theme changes
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function() {
+            setTimeout(updateTopicColors, 100);
+        });
+    }
 }
 
 // Cheatsheet page specific functionality
