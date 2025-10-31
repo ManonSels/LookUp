@@ -4,54 +4,52 @@
 
 {% block content %}
 <div class="hero">
-    <h1>Quick Reference Guides</h1>
-    <p>Your go-to place for organized information on various topics</p>
+    <h1>LookUp</h1>
+    <p>Your go to place for organized information on various topics</p>
 </div>
 
 {% if categorized_topics %}
-    {% for category_name, category_data in categorized_topics.items() %}
-    <section class="category-section">
-        <h2 class="category-header">{{ category_name }}</h2>
-        <div class="topics-grid">
-            {% for topic in category_data.topics %}
-            <a href="{{ url_for('home.cheatsheet', topic_slug=topic.slug) }}" class="topic-card" 
-               style="background-color: var(--topic-color); border-left: 4px solid var(--topic-color);"
-               onmouseover="this.style.borderColor='var(--topic-color)'; this.style.boxShadow='0 8px 25px var(--topic-color)33';"
-               onmouseout="this.style.borderColor='var(--topic-color)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)';"
-               data-color-light="{{ topic.card_color_light if topic.card_color_light else '#ffffff' }}"
-               data-color-dark="{{ topic.card_color_dark if topic.card_color_dark else '#1a1a1a' }}">
-                <div style="display: flex; align-items: center; gap: 1rem; height: 100%;">
-                    <!-- Logo - Theme Specific -->
-                    <div style="flex-shrink: 0;">
-                        {% if topic.logo_filename_light or topic.logo_filename_dark %}
-                        <img class="logo-light" 
-                             src="{{ url_for('static', filename='uploads/logos/' + topic.logo_filename_light) if topic.logo_filename_light else url_for('static', filename='uploads/logos/' + topic.logo_filename_dark) }}" 
-                             alt="{{ topic.title }} logo"
-                             style="width: 48px; height: 48px; object-fit: contain; display: block;">
-                        <img class="logo-dark" 
-                             src="{{ url_for('static', filename='uploads/logos/' + topic.logo_filename_dark) if topic.logo_filename_dark else url_for('static', filename='uploads/logos/' + topic.logo_filename_light) }}" 
-                             alt="{{ topic.title }} logo"
-                             style="width: 48px; height: 48px; object-fit: contain; display: none;">
-                        {% else %}
-                        <div style="width: 48px; height: 48px; background: var(--bg-secondary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 1.5rem;">
-                            📄
-                        </div>
-                        {% endif %}
+{% for category_name, category_data in categorized_topics.items() %}
+<section class="category-section">
+    <h2 class="category-header">{{ category_name }}</h2>
+    <div class="topics-grid">
+        {% for topic in category_data.topics %}
+        <a href="{{ url_for('home.cheatsheet', topic_slug=topic.slug) }}" class="topic-card"
+            style="background-color: var(--topic-color); border-left: 4px solid var(--topic-color);"
+            onmouseover="this.style.borderColor='var(--topic-color)'; this.style.boxShadow='0 8px 25px var(--topic-color)33';"
+            onmouseout="this.style.borderColor='var(--topic-color)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)';"
+            data-color-light="{{ topic.card_color_light if topic.card_color_light else '#ffffff' }}"
+            data-color-dark="{{ topic.card_color_dark if topic.card_color_dark else '#1a1a1a' }}">
+            <div class="topic-card-content">
+                <!-- Logo -->
+                <div class="topic-card-logo">
+                    {% if topic.logo_filename_light or topic.logo_filename_dark %}
+                    <img class="logo-light"
+                        src="{{ url_for('static', filename='uploads/logos/' + topic.logo_filename_light) if topic.logo_filename_light else url_for('static', filename='uploads/logos/' + topic.logo_filename_dark) }}"
+                        alt="{{ topic.title }} logo">
+                    <img class="logo-dark"
+                        src="{{ url_for('static', filename='uploads/logos/' + topic.logo_filename_dark) if topic.logo_filename_dark else url_for('static', filename='uploads/logos/' + topic.logo_filename_light) }}"
+                        alt="{{ topic.title }} logo">
+                    {% else %}
+                    <div class="topic-card-placeholder">
+                        📄
                     </div>
-                    
-                    <!-- Content -->
-                    <div style="flex: 1;">
-                        <h3 style="font-size: 1.7rem; line-height: 1.3;">{{ topic.title }}</h3>
-                        {% if topic.description %}
-                        <p style="font-size: 0.95rem; line-height: 1.4; margin: 0; color: var(--text-secondary);">{{ topic.description }}</p>
-                        {% endif %}
-                    </div>
+                    {% endif %}
                 </div>
-            </a>
-            {% endfor %}
-        </div>
-    </section>
-    {% endfor %}
+
+                <!-- Content -->
+                <div class="topic-card-info">
+                    <h3 class="topic-card-title">{{ topic.title }}</h3>
+                    {% if topic.description %}
+                    <p class="topic-card-description">{{ topic.description }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endfor %}
 {% else %}
 <div class="empty-state">
     <h2>No topics available yet</h2>
@@ -60,27 +58,27 @@
 {% endif %}
 
 <script>
-// Function to update logos based on theme
-function updateLogosForTheme() {
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    document.querySelectorAll('.logo-light, .logo-dark').forEach(img => {
-        if (img.classList.contains('logo-light')) {
-            img.style.display = isDark ? 'none' : 'block';
-        } else if (img.classList.contains('logo-dark')) {
-            img.style.display = isDark ? 'block' : 'none';
-        }
-    });
-}
+    // Function to update logos based on theme
+    function updateLogosForTheme() {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        document.querySelectorAll('.logo-light, .logo-dark').forEach(img => {
+            if (img.classList.contains('logo-light')) {
+                img.style.display = isDark ? 'none' : 'block';
+            } else if (img.classList.contains('logo-dark')) {
+                img.style.display = isDark ? 'block' : 'none';
+            }
+        });
+    }
 
-// Initial update
-updateLogosForTheme();
+    // Initial update
+    updateLogosForTheme();
 
-// Update when theme changes
-const themeToggle = document.getElementById('themeToggle');
-if (themeToggle) {
-    themeToggle.addEventListener('click', function() {
-        setTimeout(updateLogosForTheme, 100);
-    });
-}
+    // Update when theme changes
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function () {
+            setTimeout(updateLogosForTheme, 100);
+        });
+    }
 </script>
 {% endblock %}

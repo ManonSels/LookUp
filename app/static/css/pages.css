@@ -5,7 +5,6 @@
 /* ----- HERO SECTION ----- */
 .hero {
     text-align: center;
-    margin-bottom: 3rem;
     padding: 2rem 0;
 }
 
@@ -40,8 +39,8 @@
 /* ----- TOPICS GRID ----- */
 .topics-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(4, 1fr); /* 4 columns max */
+    gap: 1.25rem;
     margin-top: 2rem;
 }
 
@@ -49,7 +48,7 @@
     background: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    padding: 1.5rem;
+    padding: 1rem;
     text-decoration: none;
     color: inherit;
     transition: all 0.2s;
@@ -57,7 +56,7 @@
     position: relative;
     display: flex;
     align-items: center;
-    min-height: 100px;
+    min-height: 70px;
 }
 
 .topic-card[style*="background-color"]:hover {
@@ -71,20 +70,136 @@
     border-color: var(--accent-color);
 }
 
-.topic-card h3 {
-    font-size: 20.1rem;
-    font-weight: 600;
-    /* margin-bottom: 0.5rem; */
-    color: var(--text-primary);
-    line-height: 1.3;
+/* Topic card internal layout */
+.topic-card-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: 100%;
+    width: 100%;
+    min-width: 0; /* Crucial for text truncation */
 }
 
-.topic-card p {
-    color: var(--text-secondary);
-    margin: 0;
-    font-size: 0.95rem;
-    line-height: 1.4;
+.topic-card-logo {
+    flex-shrink: 0;
 }
+
+.topic-card-logo img {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    display: block;
+}
+
+.topic-card-placeholder {
+    width: 36px;
+    height: 36px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+}
+
+.topic-card-info {
+    flex: 1;
+    min-width: 0; /* Crucial for text truncation */
+    overflow: hidden;
+}
+
+/* Lighter font weight and proper truncation like quickref.me */
+.topic-card-title {
+    font-size: 0.95rem;
+    font-weight: 400; /* Lighter weight like quickref.me */
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-primary);
+}
+
+.topic-card-description {
+    font-size: 0.8rem;
+    font-weight: 400; /* Lighter weight */
+    line-height: 1.2;
+    margin: 0;
+    color: var(--text-secondary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Make logo smaller to fit thinner cards */
+.topic-card .topic-card-logo img {
+    width: 32px;
+    height: 32px;
+}
+
+.topic-card .topic-card-placeholder {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 1200px) {
+    .topics-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .topics-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .topic-card {
+        padding: 0.875rem;
+        min-height: 65px;
+    }
+    
+    .topic-card-title {
+        font-size: 0.9rem;
+    }
+    
+    .topic-card-description {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .topics-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .topic-card {
+        padding: 0.75rem;
+        min-height: 60px;
+    }
+    
+    .topic-card-title {
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .topic-card-description {
+        font-size: 0.7rem;
+    }
+    
+    /* Make logo even smaller on mobile */
+    .topic-card .topic-card-logo img,
+    .topic-card .topic-card-placeholder {
+        width: 28px;
+        height: 28px;
+        font-size: 0.9rem;
+    }
+}
+
 
 /* ------------------------------------------- */
 /* -------------- CHEATSHEETS ---------------- */
@@ -217,22 +332,18 @@
     position: relative;
 }
 
-.topic-card.admin.draggable:hover {
-    border-color: var(--accent-color);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
 .topic-header {
     display: flex;
     align-items: flex-start;
-    gap: 0.5rem;
     margin-bottom: 0.75rem;
+    position: relative;
 }
 
 .topic-handle {
-    display: flex;
-    align-items: flex-start;
-    padding-top: 0.25rem;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 10;
 }
 
 .topic-handle .handle-icon {
@@ -240,13 +351,13 @@
     color: var(--text-muted);
     font-size: 1rem;
     padding: 0.25rem;
+    margin: 0.25rem;
     border-radius: 4px;
     transition: all 0.2s;
     user-select: none;
 }
 
 .topic-handle .handle-icon:hover {
-    background: var(--bg-secondary);
     color: var(--text-secondary);
 }
 
@@ -257,6 +368,7 @@
 .topic-info {
     flex: 1;
     min-width: 0;
+    padding-left: 2rem; /* Add padding to make space for handle */
     padding-right: 30px;
 }
 
@@ -534,6 +646,52 @@
 .empty-items:hover {
     border-color: var(--accent-color);
     background: var(--card-bg);
+}
+
+/* ----- COMPACT BOOKMARK STYLES (Quickref.me style) ----- */
+.bookmark-title {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0 8px 0 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-align: center;
+    max-width: 160px;
+    z-index: 10;
+    line-height: 1.1;
+    height: 24px; /* Even more compact */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.02em;
+}
+
+.bookmark-title h3 {
+    margin: 0;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: white !important;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    letter-spacing: 0.02em;
+}
+
+.card {
+    position: relative;
+    padding-top: 2rem; /* Less space needed for compact bookmark */
+}
+
+.card-content {
+    margin-top: 0;
+}
+
+.bookmark-title {
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
 }
 
 /* ----- QUICKREF-STYLE GRID ----- */

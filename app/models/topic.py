@@ -141,6 +141,19 @@ class TopicModel:
         except Exception as e:
             print(f"Error deleting topic: {e}")
             return False
+        
+    # ----- REFRESH TOPIC TIMESTAMP ----- #
+    @db_connection
+    def refresh_updated_at(self, cursor, topic_id):
+        try:
+            cursor.execute(
+                'UPDATE topic SET updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                (topic_id,)
+            )
+            return True
+        except Exception as e:
+            print(f"Error refreshing topic timestamp: {e}")
+            return False
     
     # ----- ALL CATEGORIES ----- #
     @db_connection

@@ -106,53 +106,50 @@
         {% block content %}{% endblock %}
     </main>
 
-    {% if not request.path.startswith('/admin') %}
+        {% if not request.path.startswith('/admin') %}
     <footer class="footer">
         <div class="footer-container">
+            <!-- Left Column: Brand & About -->
             <div class="footer-brand">
                 <h3>LookUp</h3>
                 <p>Your go-to place for organized programming references, cheat sheets, and quick guides.</p>
+                <div class="footer-about" style="margin-top: 1rem;">
+                    <h4 style="margin-bottom: 0.5rem; color: var(--text-primary);">About</h4>
+                    <a href="mailto:example@gmail.com" style="color: var(--accent-color); text-decoration: none;">
+                        example@gmail.com
+                    </a>
+                </div>
             </div>
             
-            <div class="footer-links">
-                <h4>Resources</h4>
-                <ul>
-                    <li><a href="{{ url_for('home.index') }}">All Cheat Sheets</a></li>
-                    <li><a href="#">Popular Topics</a></li>
-                    <li><a href="#">New Additions</a></li>
-                    <li><a href="#">API Reference</a></li>
-                </ul>
-            </div>
-            
-            <div class="footer-links">
-                <h4>Help</h4>
-                <ul>
-                    <li><a href="#">Documentation</a></li>
-                    <li><a href="#">Getting Started</a></li>
-                    <li><a href="#">Contribute</a></li>
-                    <li><a href="#">Report Issue</a></li>
-                </ul>
-            </div>
-            
-            <div class="footer-links">
-                <h4>Company</h4>
-                <ul>
-                    <li><a href="#">About</a></li>
-                    <li><a href="#">Blog</a></li>
-                    <li><a href="#">Careers</a></li>
-                    <li><a href="#">Contact</a></li>
-                </ul>
+            <!-- Right Column: Recently Updated Topics -->
+            <div class="footer-recent">
+                <h4>Recently Updated</h4>
+                <div class="recent-topics-grid">
+                    {% if recent_topics %}
+                        {% for topic in recent_topics %}
+                        <a href="{{ url_for('home.cheatsheet', topic_slug=topic.slug) }}" class="recent-topic-card">
+                            <span class="topic-title">{{ topic.title }}</span>
+                            <span class="topic-date">{{ topic.updated_at|datetime }}</span>
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-recent-topics">
+                            <p>No recently updated topics</p>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
         
+        <!-- Bottom Section: Contact Links -->
         <div class="footer-bottom">
             <div class="footer-copyright">
-                &copy; 2025 LookUp. All rights reserved.
+                &copy; 2025 LookUp. Made with ❤️ for developers.
             </div>
             <div class="footer-social">
-                <a href="#" aria-label="GitHub">GitHub</a>
+                <a href="#" aria-label="YouTube">YouTube</a>
                 <a href="#" aria-label="Twitter">Twitter</a>
-                <a href="#" aria-label="Discord">Discord</a>
+                <a href="#" aria-label="GitHub">GitHub</a>
             </div>
         </div>
     </footer>

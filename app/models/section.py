@@ -29,16 +29,37 @@ class SectionModel:
             'INSERT INTO section (title, topic_id, display_order) VALUES (?, ?, ?)',
             (title, topic_id, display_order)
         )
-        return cursor.lastrowid
+        section_id = cursor.lastrowid
+        
+        # Update topic timestamp in a single query to avoid circular imports
+        cursor.execute(
+            'UPDATE topic SET updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            (topic_id,)
+        )
+        
+        return section_id
     
     # ----- UPDATE SECTION ----- #
     @db_connection
     def update_section(self, cursor, section_id, title, display_order):
         try:
+            # Get topic_id first
+            cursor.execute('SELECT topic_id FROM section WHERE id = ?', (section_id,))
+            result = cursor.fetchone()
+            topic_id = result['topic_id'] if result else None
+            
             cursor.execute(
                 'UPDATE section SET title = ?, display_order = ? WHERE id = ?',
                 (title, display_order, section_id)
             )
+            
+            # Update topic timestamp
+            if topic_id:
+                cursor.execute(
+                    'UPDATE topic SET updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                    (topic_id,)
+                )
+            
             return True
         except Exception as e:
             print(f"Error updating section: {e}")
@@ -48,7 +69,20 @@ class SectionModel:
     @db_connection
     def delete_section(self, cursor, section_id):
         try:
+            # Get topic_id first
+            cursor.execute('SELECT topic_id FROM section WHERE id = ?', (section_id,))
+            result = cursor.fetchone()
+            topic_id = result['topic_id'] if result else None
+            
             cursor.execute('DELETE FROM section WHERE id = ?', (section_id,))
+            
+            # Update topic timestamp
+            if topic_id:
+                cursor.execute(
+                    'UPDATE topic SET updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                    (topic_id,)
+                )
+            
             return True
         except Exception as e:
             print(f"Error deleting section: {e}")

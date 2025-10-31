@@ -3,6 +3,7 @@ from app.models.topic import TopicModel
 from app.models.section import SectionModel
 from app.models.section_item import SectionItemModel
 from app.models.category import CategoryModel
+from datetime import datetime
 
 bp = Blueprint('home', __name__)
 
@@ -12,7 +13,24 @@ def index():
     category_model = CategoryModel()
     categorized_topics = category_model.get_topics_by_category()
     
-    return render_template('home.html', categorized_topics=categorized_topics)
+    # Get ALL topics (including unpublished) for recent updates
+    topic_model = TopicModel()
+    all_topics = topic_model.get_all()  # Changed from get_all_published()
+    
+    # Sort by updated_at properly
+    def get_updated_at(topic):
+        # Handle both string and datetime objects
+        updated_at = getattr(topic, 'updated_at', None)
+        if not updated_at:
+            return getattr(topic, 'created_at', '2000-01-01')
+        return updated_at
+    
+    # Sort by updated_at in descending order (most recent first)
+    recent_topics = sorted(all_topics, key=get_updated_at, reverse=True)[:4]
+    
+    return render_template('home.html', 
+                         categorized_topics=categorized_topics,
+                         recent_topics=recent_topics)
 
 # ----- TOPIC SLUG ----- #
 @bp.route('/<topic_slug>')

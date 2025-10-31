@@ -19,53 +19,60 @@
             <input type="text" id="title" name="title" value="{{ item.title if item }}" required>
             <small>The main title for this reference item</small>
         </div>
-
+        
+        <!-- BOOKMARK COLOR PICKER -->
+        <div class="form-group">
+            <label for="bookmark_color">Bookmark Color</label>
+            <div class="color-swatches" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; margin-bottom: 0.5rem; max-width: 300px;">
+                {% set preset_colors = [
+                    '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
+                    '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#64748b'
+                ] %}
+                {% for color in preset_colors %}
+                <div class="color-swatch" data-color="{{ color }}" style="
+                    width: 40px; height: 40px; background: {{ color }}; 
+                    border-radius: 6px; cursor: pointer; border: 2px solid transparent;
+                    {% if item and item.bookmark_color == color %}border-color: var(--text-primary);{% endif %}
+                    {% if not item and color == '#3b82f6' %}border-color: var(--text-primary);{% endif %}
+                "></div>
+                {% endfor %}
+            </div>
+            <input type="hidden" id="bookmark_color" name="bookmark_color" value="{{ item.bookmark_color if item and item.bookmark_color else '#3b82f6' }}">
+            <small>Choose a color for the bookmark title. This will appear in the top-right corner.</small>
+        </div>
+        
         <div class="form-group">
             <label for="card_size">Card Size</label>
             <select id="card_size" name="card_size">
-                <option value="small" {{ 'selected' if item and item.card_size=='small' else '' }}>Small (1 × 1 row)
-                </option>
-                <option value="normal" {{ 'selected' if not item or item.card_size=='normal' else '' }}>Normal (1 × 2
-                    rows)</option>
-                <option value="wide" {{ 'selected' if item and item.card_size=='wide' else '' }}>Wide (2 × 2 rows)
-                </option>
-                <option value="stretch" {{ 'selected' if item and item.card_size=='stretch' else '' }}>Stretch (3 × 2
-                    rows)</option>
+                <option value="small" {{ 'selected' if item and item.card_size == 'small' else '' }}>Small (1 × 1 row)</option>
+                <option value="normal" {{ 'selected' if not item or item.card_size == 'normal' else '' }}>Normal (1 × 2 rows)</option>
+                <option value="wide" {{ 'selected' if item and item.card_size == 'wide' else '' }}>Wide (2 × 2 rows)</option>
+                <option value="stretch" {{ 'selected' if item and item.card_size == 'stretch' else '' }}>Stretch (3 × 2 rows)</option>
             </select>
-            <small>Choose how this card should appear in the layout. All cards will align neatly at the bottom.</small>
-
-            <!-- ADD THE VISUAL SIZE PICKER RIGHT HERE -->
+            <small>Choose how this card should appear in the layout.</small>
+            
+            <!-- Visual size picker (keep your existing one) -->
             <div class="size-preview" style="margin-top: 1rem;">
-                <div class="size-options"
-                    style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; max-width: 200px;">
-                    <div class="size-option small" data-size="small"
-                        style="height: 20px; background: var(--border-color); border-radius: 3px; cursor: pointer;">
-                    </div>
-                    <div class="size-option normal" data-size="normal"
-                        style="height: 40px; background: var(--border-color); border-radius: 3px; cursor: pointer;">
-                    </div>
-                    <div class="size-option wide" data-size="wide"
-                        style="height: 40px; background: var(--border-color); grid-column: span 2; border-radius: 3px; cursor: pointer;">
-                    </div>
-                    <div class="size-option stretch" data-size="stretch"
-                        style="height: 40px; background: var(--border-color); grid-column: span 3; border-radius: 3px; cursor: pointer;">
-                    </div>
+                <div class="size-options" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; max-width: 200px;">
+                    <div class="size-option small" data-size="small" style="height: 20px; background: var(--border-color); border-radius: 3px; cursor: pointer;"></div>
+                    <div class="size-option normal" data-size="normal" style="height: 40px; background: var(--border-color); border-radius: 3px; cursor: pointer;"></div>
+                    <div class="size-option wide" data-size="wide" style="height: 40px; background: var(--border-color); grid-column: span 2; border-radius: 3px; cursor: pointer;"></div>
+                    <div class="size-option stretch" data-size="stretch" style="height: 40px; background: var(--border-color); grid-column: span 3; border-radius: 3px; cursor: pointer;"></div>
                 </div>
                 <small style="display: block; margin-top: 0.5rem;">Click to preview sizes</small>
             </div>
         </div>
-
+        
         <div class="form-group">
             <label for="markdown_content">Content (Markdown)</label>
-            <textarea id="markdown_content" name="markdown_content" rows="15"
-                placeholder="Write your content using Markdown syntax...">{{ item.markdown_content if item }}</textarea>
+            <textarea id="markdown_content" name="markdown_content" rows="15" placeholder="Write your content using Markdown syntax...">{{ item.markdown_content if item }}</textarea>
             <small>
-                Supports: <strong>**bold**</strong>, <em>*italic*</em>,
+                Supports: <strong>**bold**</strong>, <em>*italic*</em>, 
                 <code>`code`</code>, ```code blocks```, [links](url), lists, and more.
                 <a href="https://www.markdownguide.org/cheat-sheet/" target="_blank">Markdown Guide</a>
             </small>
         </div>
-
+        
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">
                 {{ 'Update' if item else 'Create' }} Item
@@ -73,10 +80,11 @@
             <a href="{{ url_for('admin.manage_sections', topic_id=section.topic_id) }}" class="btn btn-secondary">
                 Cancel
             </a>
-
+            
             {% if item %}
-            <a href="{{ url_for('admin.delete_item', item_id=item.id) }}" class="btn btn-danger"
-                onclick="return confirm('Are you sure you want to delete this item?')">
+            <a href="{{ url_for('admin.delete_item', item_id=item.id) }}" 
+               class="btn btn-danger" 
+               onclick="return confirm('Are you sure you want to delete this item?')">
                 Delete Item
             </a>
             {% endif %}
@@ -85,29 +93,46 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const sizeSelect = document.getElementById('card_size');
-        const sizeOptions = document.querySelectorAll('.size-option');
-
+document.addEventListener('DOMContentLoaded', function() {
+    // Color swatch selection
+    const colorSwatches = document.querySelectorAll('.color-swatch');
+    const bookmarkColorInput = document.getElementById('bookmark_color');
+    
+    colorSwatches.forEach(swatch => {
+        swatch.addEventListener('click', function() {
+            const color = this.getAttribute('data-color');
+            bookmarkColorInput.value = color;
+            
+            // Update visual selection
+            colorSwatches.forEach(s => s.style.borderColor = 'transparent');
+            this.style.borderColor = 'var(--text-primary)';
+        });
+    });
+    
+    // Size picker functionality (your existing code)
+    const sizeSelect = document.getElementById('card_size');
+    const sizeOptions = document.querySelectorAll('.size-option');
+    
+    if (sizeSelect && sizeOptions.length > 0) {
         // Update visual when select changes
-        sizeSelect.addEventListener('change', function () {
+        sizeSelect.addEventListener('change', function() {
             sizeOptions.forEach(opt => opt.style.background = 'var(--border-color)');
             const activeOpt = document.querySelector(`.size-option[data-size="${this.value}"]`);
             if (activeOpt) {
                 activeOpt.style.background = 'var(--accent-color)';
             }
         });
-
+        
         // Update select when visual is clicked
         sizeOptions.forEach(option => {
-            option.addEventListener('click', function () {
+            option.addEventListener('click', function() {
                 const size = this.getAttribute('data-size');
                 sizeSelect.value = size;
                 sizeOptions.forEach(opt => opt.style.background = 'var(--border-color)');
                 this.style.background = 'var(--accent-color)';
             });
         });
-
+        
         // Set initial visual state
         if (sizeSelect.value) {
             const activeOpt = document.querySelector(`.size-option[data-size="${sizeSelect.value}"]`);
@@ -115,6 +140,7 @@
                 activeOpt.style.background = 'var(--accent-color)';
             }
         }
-    });
+    }
+});
 </script>
 {% endblock %}

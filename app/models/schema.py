@@ -66,7 +66,8 @@ class Schema:
                 title TEXT NOT NULL,
                 markdown_content TEXT NOT NULL,
                 display_order INTEGER DEFAULT 0,
-                card_size TEXT DEFAULT 'normal',  -- ADD THIS LINE: 'small', 'normal', 'wide', 'tall', 'large'
+                card_size TEXT DEFAULT 'normal',
+                bookmark_color TEXT DEFAULT '#3b82f6',  -- ADD THIS LINE (blue as default)
                 section_id INTEGER NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

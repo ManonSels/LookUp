@@ -17,7 +17,10 @@
         <div class="masonry-grid">
             {% for item in section.items %}
             <div class="card card-{{ item.card_size }}" id="item-{{ item.id }}">
-                <h3>{{ item.title }}</h3>
+                <!-- Bookmark Title -->
+                <div class="bookmark-title" style="background-color: {{ item.bookmark_color }}; color: white;">
+                    <h3>{{ item.title }}</h3>
+                </div>
                 <div class="card-content">
                     {{ item.markdown_content|markdown|safe }}
                 </div>
