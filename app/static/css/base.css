@@ -4,8 +4,17 @@
 
 * {
     margin: 0;
-    padding: 0;
     box-sizing: border-box;
+}
+
+/* Reset padding only for non-list elements */
+body, div, p, h1, h2, h3, h4, h5, h6, header, footer, nav, section, article, aside {
+    padding: 0;
+}
+
+/* Preserve list padding */
+ul, ol {
+    padding-left: 1.5rem;
 }
 
 html {

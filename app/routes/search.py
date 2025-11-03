@@ -39,6 +39,9 @@ def get_topic_content(topic_id):
     topic = topic_model.get_by_id(topic_id)
     if not topic:
         return jsonify({'error': 'Topic not found'}), 404
+
+    if not topic.is_published:
+        return jsonify({'error': 'Topic not found'}), 404
     
     sections = section_model.get_by_topic(topic_id)
     
@@ -48,7 +51,7 @@ def get_topic_content(topic_id):
     return jsonify({
         'topic': {
             'id': topic.id,
-            'slug': topic.slug,
+            'slug': topic.slug,  # Ensure slug is included
             'title': topic.title,
             'description': topic.description
         },

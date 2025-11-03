@@ -318,6 +318,39 @@
     text-decoration: underline;
 }
 
+/* ------- IMAGE SCALING ------- */
+
+.card-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0.75rem auto;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-small .card-content img {
+    max-width: 90%; 
+}
+
+.card-normal .card-content img {
+    max-width: 95%;
+}
+
+.card-wide .card-content img,
+.card-stretch .card-content img {
+    max-width: 100%;
+}
+
+.card-content {
+    overflow: hidden;
+}
+
+.card-content img:hover {
+    transform: scale(1.02);
+    transition: transform 0.2s ease;
+}
+
 /* ------------------------------------------- */
 /* -------------- ALERTS & STATES ------------ */
 /* ------------------------------------------- */

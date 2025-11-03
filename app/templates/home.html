@@ -9,9 +9,9 @@
 </div>
 
 {% if categorized_topics %}
-{% for category_name, category_data in categorized_topics.items() %}
+{% for category_id, category_data in categorized_topics.items() %}
 <section class="category-section">
-    <h2 class="category-header">{{ category_name }}</h2>
+    <h2 class="category-header">{{ category_data.name }}</h2>
     <div class="topics-grid">
         {% for topic in category_data.topics %}
         <a href="{{ url_for('home.cheatsheet', topic_slug=topic.slug) }}" class="topic-card"

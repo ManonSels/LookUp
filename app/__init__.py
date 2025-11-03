@@ -28,14 +28,26 @@ def create_app():
         if not text:
             return ""
         
-        return markdown.markdown(
+        # Pre-process checkbox syntax [ ] and [x]
+        if text:
+            text = text.replace('[ ]', '<input type="checkbox" disabled>')
+            text = text.replace('[x]', '<input type="checkbox" checked disabled>')
+            text = text.replace('[X]', '<input type="checkbox" checked disabled>')
+        
+        # Use markdown with proper extensions
+        html = markdown.markdown(
             text, 
             extensions=[
-                'fenced_code',
-                'tables',
-                'toc'
+                'fenced_code',    # Code blocks
+                'tables',         # Tables
+                'toc',           # Table of contents
+                'extra',         # Adds many features
+                'nl2br',         # Convert newlines to <br>
+                'sane_lists',    # Better list handling
             ]
         )
+        
+        return html
     
     # ADD THE DATETIME FILTER INSIDE create_app FUNCTION
     @app.template_filter('datetime')

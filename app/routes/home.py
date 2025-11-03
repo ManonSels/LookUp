@@ -11,15 +11,16 @@ bp = Blueprint('home', __name__)
 @bp.route('/')
 def index():
     category_model = CategoryModel()
-    categorized_topics = category_model.get_topics_by_category()
+    
+    # Use the same method as admin dashboard for consistent ordering
+    topic_model = TopicModel()
+    categorized_topics = topic_model.get_all_grouped_by_category()
     
     # Get ALL topics (including unpublished) for recent updates
-    topic_model = TopicModel()
-    all_topics = topic_model.get_all()  # Changed from get_all_published()
+    all_topics = topic_model.get_all()
     
     # Sort by updated_at properly
     def get_updated_at(topic):
-        # Handle both string and datetime objects
         updated_at = getattr(topic, 'updated_at', None)
         if not updated_at:
             return getattr(topic, 'created_at', '2000-01-01')
@@ -31,6 +32,7 @@ def index():
     return render_template('home.html', 
                          categorized_topics=categorized_topics,
                          recent_topics=recent_topics)
+
 
 # ----- TOPIC SLUG ----- #
 @bp.route('/<topic_slug>')

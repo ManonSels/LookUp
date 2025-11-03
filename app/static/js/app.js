@@ -346,10 +346,10 @@ function navigateToTopic(topicSlug) {
 }
 
 function navigateToSection(topicSlug, elementId) {
-	closeSearchModal();
-	// Use client-side navigation instead of full page reload
-	const url = '/' + topicSlug + '#' + elementId;
-	navigateToUrl(url);
+    closeSearchModal();
+    // Use full page reload instead of client-side navigation for hash links
+    const url = '/' + topicSlug + '#' + elementId;
+    window.location.href = url;
 }
 
 function navigateToUrl(url) {

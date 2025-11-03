@@ -88,7 +88,7 @@ class CategoryModel:
             FROM category c
             LEFT JOIN topic t ON c.id = t.category_id AND t.is_published = 1
             GROUP BY c.id
-            ORDER BY c.display_order, c.name
+            ORDER BY c.display_order, c.name  # Ensure categories are ordered by display_order
         ''')
         categories_data = cursor.fetchall()
         
@@ -105,14 +105,14 @@ class CategoryModel:
                 cursor.execute(f'''
                     SELECT * FROM topic 
                     WHERE id IN ({placeholders}) 
-                    ORDER BY display_order, title
+                    ORDER BY display_order, title  # Ensure topics are ordered by display_order
                 ''', topic_ids)
                 
                 topics_data = cursor.fetchall()
                 
                 from app.models.topic import TopicModel
                 topic_model = TopicModel()
-                topics = [topic_model._dict_to_topic(topic) for topic in topics_data]  # This now includes logo_filename
+                topics = [topic_model._dict_to_topic(topic) for topic in topics_data]
             else:
                 topics = []
             
@@ -122,8 +122,9 @@ class CategoryModel:
                 'id': category_id
             }
         
+        # Sort by display_order
         return dict(sorted(categorized_topics.items(), key=lambda x: x[1]['display_order']))
-    
+
     # ------- DISPLAY ORDER VALIDATION ------- #
     @db_connection
     def is_display_order_taken(self, cursor, display_order, exclude_category_id=None):
