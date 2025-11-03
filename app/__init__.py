@@ -1,14 +1,15 @@
+import os
 import markdown
 from flask import Flask
 from flask_login import LoginManager
 from app.models.user import UserModel
-from datetime import datetime  # ADD THIS IMPORT
+from datetime import datetime
 
 login_manager = LoginManager()
 
 def create_app():
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'your-secret-key-here'  # Change this!
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-this')
     
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'

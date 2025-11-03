@@ -1,3 +1,4 @@
+import os
 from .database import db_connection
 
 class Schema:
@@ -82,16 +83,21 @@ class Schema:
     def create_admin_user(self, cursor):
         from .database import hash_password
         
-        cursor.execute('SELECT id FROM user WHERE username = ?', ('admin',))
+        admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
+        admin_password = os.environ.get('ADMIN_PASSWORD', 'admin123')
+        
+        cursor.execute('SELECT id FROM user WHERE username = ?', (admin_username,))
         admin = cursor.fetchone()
         
         if not admin:
-            password_hash = hash_password('admin123')
+            password_hash = hash_password(admin_password)
             cursor.execute(
                 'INSERT INTO user (username, email, password_hash, is_admin) VALUES (?, ?, ?, ?)',
-                ('admin', 'admin@example.com', password_hash, 1)
+                (admin_username, f'{admin_username}@example.com', password_hash, 1)
             )
-            print("Admin user created!")
+            print(f"Admin user '{admin_username}' created!")
+        else:
+            print(f"Admin user '{admin_username}' already exists.")
     
     # ----- INITIALIZE ENTIRE DB ----- #
     def init_db(self):

@@ -1,5 +1,9 @@
 from app import create_app
 from app.models.schema import Schema
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = create_app()
 
