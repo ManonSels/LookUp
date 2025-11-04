@@ -3,6 +3,8 @@
 // Global state
 let currentPage = window.location.pathname;
 let isTransitioning = false;
+let undoStack = [];
+let redoStack = [];
 
 // prevent duplicate auto-hash scrolling when we already handled it manually
 let suppressAutoHashScroll = false;
@@ -42,7 +44,82 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	// Initialize page-specific functionality
 	initializePageSpecificFunctionality();
+
+	// Initialize undo/redo functionality
+	initializeUndoRedo();
 });
+
+// Undo/Redo functionality
+function initializeUndoRedo() {
+    const undoButton = document.getElementById('undoButton');
+    const undoNotification = document.getElementById('undoNotification');
+    const undoMessage = document.getElementById('undoMessage');
+
+    if (undoButton && undoNotification) {
+        undoButton.addEventListener('click', function() {
+            if (undoStack.length > 0) {
+                const action = undoStack.pop();
+                redoStack.push(action);
+                
+                // Execute undo action
+                if (action.type === 'reorder') {
+                    // Implement undo for reordering
+                    showNotification('Changes undone', 3000);
+                }
+                
+                if (undoStack.length === 0) {
+                    undoNotification.style.display = 'none';
+                }
+            }
+        });
+    }
+}
+
+function showNotification(message, duration = 3000) {
+    const undoNotification = document.getElementById('undoNotification');
+    const undoMessage = document.getElementById('undoMessage');
+    
+    if (undoNotification && undoMessage) {
+        undoMessage.textContent = message;
+        undoNotification.style.display = 'block';
+        
+        setTimeout(() => {
+            undoNotification.style.display = 'none';
+        }, duration);
+    }
+}
+
+function pushToUndoStack(action) {
+    undoStack.push(action);
+    redoStack = []; // Clear redo stack when new action is performed
+    showNotification('Action completed - Undo available', 3000);
+}
+
+// Show loading overlay
+function showLoadingOverlay(message = 'Loading...') {
+    let overlay = document.getElementById('loadingOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'loadingOverlay';
+        overlay.className = 'loading-overlay';
+        overlay.innerHTML = `
+            <div style="text-align: center;">
+                <div class="loading-spinner" style="margin: 0 auto 1rem;"></div>
+                <div>${message}</div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    }
+    overlay.style.display = 'flex';
+}
+
+// Hide loading overlay
+function hideLoadingOverlay() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.style.display = 'none';
+    }
+}
 
 // Search functionality
 function initializeSearch() {
@@ -63,8 +140,12 @@ function initializeSearch() {
 	if (searchTrigger) {
 		searchTrigger.addEventListener('click', function () {
 			searchModal.style.display = 'block';
+			showLoadingOverlay('Loading topics...');
 			loadAllTopics();
-			setTimeout(() => searchInput.focus(), 100);
+			setTimeout(() => {
+                searchInput.focus();
+                hideLoadingOverlay();
+            }, 100);
 		});
 	}
 
@@ -125,7 +206,12 @@ function initializeSearch() {
 
 	function loadAllTopics() {
 		fetch('/search/topics')
-			.then(response => response.json())
+			.then(response => {
+				if (!response.ok) {
+					throw new Error('Network response was not ok');
+				}
+				return response.json();
+			})
 			.then(data => {
 				allTopics = data.topics || [];
 				displayAllTopics();
@@ -175,17 +261,26 @@ function initializeSearch() {
 			activeItem.classList.add('active');
 		}
 
+		showLoadingOverlay('Loading topic content...');
+
 		// Load topic content
 		fetch(`/search/topic/${topicId}`)
-			.then(response => response.json())
+			.then(response => {
+				if (!response.ok) {
+					throw new Error('Network response was not ok');
+				}
+				return response.json();
+			})
 			.then(data => {
 				displayTopicContent(data);
+				hideLoadingOverlay();
 			})
 			.catch(error => {
 				console.error('Error loading topic content:', error);
 				if (topicContent) {
 					topicContent.innerHTML = '<div class="search-error">Error loading topic content</div>';
 				}
+				hideLoadingOverlay();
 			});
 	}
 
@@ -240,16 +335,25 @@ function initializeSearch() {
 		topicContent.style.display = 'none';
 		searchContentEmpty.style.display = 'none';
 
+		showLoadingOverlay('Searching...');
+
 		fetch(`/search/query?q=${encodeURIComponent(query)}`)
-			.then(response => response.json())
+			.then(response => {
+				if (!response.ok) {
+					throw new Error('Network response was not ok');
+				}
+				return response.json();
+			})
 			.then(data => {
 				displaySearchResults(data, query);
+				hideLoadingOverlay();
 			})
 			.catch(error => {
 				console.error('Search error:', error);
 				if (searchResults) {
 					searchResults.innerHTML = '<div class="search-error">Error performing search</div>';
 				}
+				hideLoadingOverlay();
 			});
 	}
 

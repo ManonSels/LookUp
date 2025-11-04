@@ -92,8 +92,8 @@
 .footer {
     background: var(--footer-bg);
     color: var(--footer-text);
-    padding: 3rem 0 2rem 0;
-    margin-top: 4rem;
+    padding: 2rem 0 1.5rem 0;
+    margin-top: 3rem;
     border-top: 1px solid var(--border-color);
 }
 
@@ -102,31 +102,31 @@
     margin: 0 auto;
     padding: 0 2rem;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 3rem;
+    grid-template-columns: 1fr 1fr 1fr; /* Three equal columns */
+    gap: 2rem;
     align-items: start;
 }
 
 .footer-brand h3 {
     color: var(--text-primary);
-    margin-bottom: 1rem;
-    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.3rem;
 }
 
 .footer-brand p {
     color: var(--footer-muted);
-    line-height: 1.6;
-    max-width: 300px;
+    line-height: 1.5;
+    font-size: 0.9rem;
 }
 
 .footer-about {
-    margin-top: 1.5rem;
+    margin-top: 1rem;
 }
 
 .footer-about h4 {
     color: var(--text-primary);
     margin-bottom: 0.5rem;
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 600;
 }
 
@@ -134,6 +134,7 @@
     color: var(--accent-color);
     text-decoration: none;
     transition: color 0.2s;
+    font-size: 0.9rem;
 }
 
 .footer-about a:hover {
@@ -141,10 +142,15 @@
     text-decoration: underline;
 }
 
+.footer-recent {
+    display: flex;
+    flex-direction: column;
+}
+
 .footer-recent h4 {
     color: var(--text-primary);
-    margin-bottom: 1rem;
-    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
     font-weight: 600;
 }
 
@@ -152,9 +158,8 @@
 .recent-topics-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
+    grid-template-rows: auto auto;
     gap: 0.5rem;
-    max-height: 140px; /* Fixed height to prevent footer from getting too tall */
 }
 
 .recent-topic-card {
@@ -168,7 +173,8 @@
     text-decoration: none;
     color: var(--text-primary);
     transition: all 0.2s;
-    min-height: 60px; /* Fixed height for consistency */
+    min-height: 50px; /* More compact */
+    font-size: 0.85rem;
 }
 
 .recent-topic-card:hover {
@@ -186,7 +192,7 @@
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.2rem;
 }
 
 .topic-date {
@@ -198,25 +204,26 @@
 .no-recent-topics {
     grid-column: 1 / -1;
     text-align: center;
-    padding: 1rem;
+    padding: 0.75rem;
     color: var(--text-muted);
     font-style: italic;
     background: var(--bg-secondary);
-    border-radius: 8px;
+    border-radius: 6px;
     border: 1px dashed var(--border-color);
+    font-size: 0.85rem;
 }
 
 .footer-bottom {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem 2rem 0 2rem;
+    padding: 1.5rem 2rem 0 2rem;
     border-top: 1px solid var(--border-color);
-    margin-top: 2rem;
+    margin-top: 1.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     color: var(--footer-muted);
-    font-size: 0.875rem;
+    font-size: 0.8rem;
 }
 
 .footer-social {
@@ -228,6 +235,7 @@
     color: var(--footer-muted);
     text-decoration: none;
     transition: color 0.2s;
+    font-size: 0.8rem;
 }
 
 .footer-social a:hover {
@@ -247,43 +255,55 @@ body.admin-page .main-content {
 /* ------------- RESPONSIVE DESIGN ----------- */
 /* ------------------------------------------- */
 
-@media (max-width: 768px) {
-    /* Navigation */
-    .nav-container {
-        padding: 0 1rem;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    /* Main Content */
-    .main-content {
-        padding: 1rem;
-    }
-
-    /* Footer */
+@media (max-width: 1024px) {
     .footer-container {
-        grid-template-columns: 1fr;
-        gap: 2rem;
+        grid-template-columns: 1fr 1fr; /* Two columns on medium screens */
+        gap: 1.5rem;
+    }
+    
+    .footer-brand {
+        grid-column: 1 / -1; /* Brand takes full width */
         text-align: center;
     }
-
+    
     .footer-brand p {
-        max-width: none;
+        max-width: 500px;
         margin: 0 auto;
     }
+}
 
-    .recent-topics-grid {
-        max-height: none;
-        grid-template-columns: 1fr;
-        grid-template-rows: auto;
+@media (max-width: 768px) {
+    .footer {
+        padding: 1.5rem 0 1rem 0;
     }
-
+    
+    .footer-container {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding: 0 1rem;
+        text-align: center;
+    }
+    
+    .footer-brand {
+        grid-column: 1;
+    }
+    
+    .footer-brand p {
+        max-width: none;
+    }
+    
+    .recent-topics-grid {
+        max-width: 300px;
+        margin: 0 auto;
+    }
+    
     .footer-bottom {
         flex-direction: column;
         gap: 1rem;
         text-align: center;
+        padding: 1rem 1rem 0 1rem;
     }
-
+    
     .footer-social {
         justify-content: center;
     }
@@ -291,19 +311,20 @@ body.admin-page .main-content {
 
 @media (max-width: 480px) {
     .footer {
-        padding: 2rem 0 1.5rem 0;
+        padding: 1rem 0 0.75rem 0;
     }
     
     .footer-container {
-        padding: 0 1rem;
+        padding: 0 0.75rem;
+        gap: 1rem;
     }
     
     .footer-bottom {
-        padding: 1.5rem 1rem 0 1rem;
+        padding: 0.75rem 0.75rem 0 0.75rem;
     }
     
     .recent-topic-card {
-        min-height: 50px;
+        min-height: 45px;
         padding: 0.4rem;
     }
     
@@ -313,5 +334,10 @@ body.admin-page .main-content {
     
     .topic-date {
         font-size: 0.65rem;
+    }
+    
+    .footer-recent h4 {
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
     }
 }

@@ -2,17 +2,28 @@ import os
 import markdown
 from flask import Flask
 from flask_login import LoginManager
+from flask_caching import Cache
 from app.models.user import UserModel
 from datetime import datetime
 
 login_manager = LoginManager()
+cache = Cache()
 
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-this')
+    app.config['CACHE_TYPE'] = 'SimpleCache'
+    app.config['CACHE_DEFAULT_TIMEOUT'] = 300
+    
+    # Ensure instance folder exists
+    try:
+        os.makedirs(app.instance_path, exist_ok=True)
+    except OSError:
+        pass
     
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
+    cache.init_app(app)
     
     from app.routes.home import bp as home_bp
     from app.routes.auth import auth_bp
@@ -23,6 +34,10 @@ def create_app():
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(search_bp)
+    
+    # Register teardown context
+    from app.models.database import close_db
+    app.teardown_appcontext(close_db)
     
     @app.template_filter('markdown')
     def render_markdown(text):
@@ -50,7 +65,6 @@ def create_app():
         
         return html
     
-    # ADD THE DATETIME FILTER INSIDE create_app FUNCTION
     @app.template_filter('datetime')
     def format_datetime(value):
         if not value:
@@ -77,5 +91,10 @@ def create_app():
 
 @login_manager.user_loader
 def load_user(user_id):
-    user_model = UserModel()
-    return user_model.get_by_id(int(user_id))
+    try:
+        user_model = UserModel()
+        return user_model.get_by_id(int(user_id))
+    except Exception as e:
+        from flask import current_app
+        current_app.logger.error(f"Error loading user {user_id}: {e}")
+        return None

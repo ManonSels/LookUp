@@ -19,6 +19,35 @@
     .card {
         scroll-margin-top: 90px;
     }
+
+    /* Loading states */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        color: white;
+        font-size: 1.2rem;
+    }
+
+    .undo-notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: var(--success-bg);
+        color: var(--success-text);
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        display: none;
+    }
 </style>
     <script>
         // Apply theme immediately to prevent flash
@@ -37,6 +66,12 @@
     <!-- Page Loading Indicator -->
     <div id="pageLoading" class="page-loading">
         <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Undo Notification -->
+    <div id="undoNotification" class="undo-notification">
+        <span id="undoMessage">Action completed</span>
+        <button id="undoButton" class="btn btn-sm" style="margin-left: 1rem;">Undo</button>
     </div>
 
     <!-- Search Modal -->
@@ -121,7 +156,7 @@
                 </div>
             </div>
             
-            <!-- Right Column: Recently Updated Topics -->
+            <!-- Middle Column: Recently Updated Topics -->
             <div class="footer-recent">
                 <h4>Recently Updated</h4>
                 <div class="recent-topics-grid">
@@ -135,6 +170,25 @@
                     {% else %}
                         <div class="no-recent-topics">
                             <p>No recently updated topics</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right Column: Most Viewed Topics -->
+            <div class="footer-recent">
+                <h4>Most Viewed</h4>
+                <div class="recent-topics-grid">
+                    {% if most_viewed_topics %}
+                        {% for topic in most_viewed_topics %}
+                        <a href="{{ url_for('home.cheatsheet', topic_slug=topic.slug) }}" class="recent-topic-card">
+                            <span class="topic-title">{{ topic.title }}</span>
+                            <span class="topic-date">{{ topic.view_count }} views</span>
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-recent-topics">
+                            <p>No view data yet</p>
                         </div>
                     {% endif %}
                 </div>
