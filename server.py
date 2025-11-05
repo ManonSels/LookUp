@@ -5,11 +5,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Debug: Check if environment variables are loaded
-print("Environment variables:")
-print(f"ADMIN_USERNAME: {os.environ.get('ADMIN_USERNAME')}")
-print(f"ADMIN_PASSWORD: {os.environ.get('ADMIN_PASSWORD')}")
-
 app = create_app()
 
 with app.app_context():

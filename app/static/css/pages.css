@@ -1,6 +1,6 @@
 .hero {
     text-align: center;
-    padding: 2rem 0;
+    padding: 0 0 2rem 0;
 }
 
 .hero h1 {
@@ -49,7 +49,7 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     position: relative;
     display: flex;
-    align-items: center;
+    align-items: left;
     min-height: 70px;
 }
 

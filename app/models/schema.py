@@ -128,14 +128,12 @@ class Schema:
                     'UPDATE user SET password_hash = ?, is_admin = 1 WHERE username = ?',
                     (password_hash, admin_username)
                 )
-                print(f"Updated password for existing user '{admin_username}'")
             else:
                 password_hash = hash_password(admin_password)
                 cursor.execute(
                     'INSERT INTO user (username, email, password_hash, is_admin) VALUES (?, ?, ?, ?)',
                     (admin_username, f'{admin_username}@example.com', password_hash, 1)
                 )
-                print(f"Created new admin user '{admin_username}'")
             
             return True
         except Exception as e:
