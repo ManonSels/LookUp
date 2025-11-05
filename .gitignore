@@ -28,8 +28,6 @@ share/python-wheels/
 MANIFEST
 
 # PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
 
@@ -56,7 +54,7 @@ coverage.xml
 *.pot
 
 # Flask stuff
-instance/
+instance/*
 !instance/.gitkeep
 .webassets-cache
 
@@ -80,11 +78,7 @@ ipython_config.py
 .python-version
 
 # pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-#Pipfile.lock
+# Pipfile.lock
 
 # celery beat schedule file
 celerybeat-schedule
@@ -123,6 +117,9 @@ dmypy.json
 *.db
 *.sqlite3
 *.db-journal
+*.sqlite
+*.db-wal
+*.db-shm
 
 # OS generated files
 .DS_Store
@@ -139,28 +136,72 @@ Thumbs.db
 *.swp
 *.swo
 *~
+*.sublime-*
+*.code-workspace
 
 # Logs
 *.log
 logs/
+*.log.*
 
 # Temporary files
 *.tmp
 *.temp
+*.tmp.*
 
 # Environment variables
 .env
 .secrets
+.env.local
+.env.*.local
 
 # Flask debug mode
 .flaskenv
 
 # macOS
-*.DS_Store
+.AppleDouble
+.LSOverride
+.DS_Store
 
 # Windows
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
 
 # Project specific
-/instance/site.db  # Your SQLite database - IMPORTANT to ignore!
+/instance/site.db
 /instance/*.db
+/instance/uploads/
+/instance/cache/
+
+# Static file uploads (if you have user uploads)
+/app/static/uploads/
+!app/static/uploads/.gitkeep
+
+# Cache directories
+.cache/
+__pycache__/
+
+# Coverage reports
+.coverage
+htmlcov/
+
+# Pytest
+.pytest_cache/
+
+# Package manager specific
+Pipfile
+Pipfile.lock
+poetry.lock
+pyproject.toml
+
+# Development tools
+.mypy_cache/
+.ropeproject/
+
+# Build outputs
+/build/
+/dist/
