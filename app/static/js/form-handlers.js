@@ -32,7 +32,6 @@ function initializeFormHandlers() {
                 preview.textContent = this.value;
                 preview.style.backgroundColor = this.value;
                 
-                // Update text color for better contrast
                 const hex = this.value.replace('#', '');
                 const r = parseInt(hex.substr(0, 2), 16);
                 const g = parseInt(hex.substr(2, 2), 16);
@@ -42,13 +41,11 @@ function initializeFormHandlers() {
             }
         });
         
-        // Initialize preview on load
         const previewId = input.id.replace('_light', 'PreviewLight').replace('_dark', 'PreviewDark');
         const preview = document.getElementById(previewId);
         if (preview) {
             preview.style.backgroundColor = input.value;
             
-            // Set initial text color
             const hex = input.value.replace('#', '');
             const r = parseInt(hex.substr(0, 2), 16);
             const g = parseInt(hex.substr(2, 2), 16);
@@ -58,7 +55,6 @@ function initializeFormHandlers() {
         }
     });
     
-    // Auto-save functionality for forms
     initializeAutoSave();
 }
 
@@ -71,7 +67,6 @@ function initializeAutoSave() {
         const inputs = form.querySelectorAll('input, textarea, select');
         let saveTimeout;
         
-        // Save function
         const saveFormState = () => {
             const formData = {};
             inputs.forEach(input => {
@@ -84,7 +79,6 @@ function initializeAutoSave() {
             localStorage.setItem(`autosave-${formId}`, JSON.stringify(formData));
         };
         
-        // Restore function
         const restoreFormState = () => {
             const saved = localStorage.getItem(`autosave-${formId}`);
             if (saved) {
@@ -98,12 +92,10 @@ function initializeAutoSave() {
                                 input.value = formData[input.name];
                             }
                             
-                            // Trigger change events for dependent elements
                             input.dispatchEvent(new Event('change', { bubbles: true }));
                         }
                     });
                     
-                    // Show restore notification
                     showAutoSaveNotification('Form data restored from previous session');
                 } catch (e) {
                     console.error('Error restoring form data:', e);
@@ -111,7 +103,6 @@ function initializeAutoSave() {
             }
         };
         
-        // Auto-save on input with debounce
         inputs.forEach(input => {
             input.addEventListener('input', () => {
                 clearTimeout(saveTimeout);
@@ -124,13 +115,11 @@ function initializeAutoSave() {
             });
         });
         
-        // Clear on successful submit
         form.addEventListener('submit', () => {
             clearTimeout(saveTimeout);
             localStorage.removeItem(`autosave-${formId}`);
         });
         
-        // Restore on page load if form hasn't been submitted
         if (!form.querySelector('[data-submitted]')) {
             setTimeout(restoreFormState, 100);
         }

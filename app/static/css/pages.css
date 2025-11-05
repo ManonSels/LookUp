@@ -1,8 +1,3 @@
-/* ------------------------------------------- */
-/* ---------------- HOMEPAGE ----------------- */
-/* ------------------------------------------- */
-
-/* ----- HERO SECTION ----- */
 .hero {
     text-align: center;
     padding: 2rem 0;
@@ -22,7 +17,6 @@
     margin: 0 auto;
 }
 
-/* ----- CATEGORY SECTIONS ----- */
 .category-section {
     margin-bottom: 3rem;
     transition: all 0.3s ease;
@@ -37,10 +31,9 @@
     border-bottom: 2px solid var(--border-color);
 }
 
-/* ----- TOPICS GRID ----- */
 .topics-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 columns max */
+    grid-template-columns: repeat(4, 1fr);
     gap: 1.25rem;
     margin-top: 2rem;
 }
@@ -52,7 +45,7 @@
     padding: 1rem;
     text-decoration: none;
     color: inherit;
-    transition: all 0.4s ease; /* Increased from 0.2s to 0.4s */
+    transition: all 0.4s ease;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     position: relative;
     display: flex;
@@ -71,14 +64,13 @@
     border-color: var(--accent-color);
 }
 
-/* Topic card internal layout */
 .topic-card-content {
     display: flex;
     align-items: center;
     gap: 1rem;
     height: 100%;
     width: 100%;
-    min-width: 0; /* Crucial for text truncation */
+    min-width: 0;
 }
 
 .topic-card-logo {
@@ -90,7 +82,7 @@
     height: 36px;
     object-fit: contain;
     display: block;
-    transition: opacity 0.5s ease; /* Increased from 0.3s to 0.5s */
+    transition: opacity 0.5s ease;
 }
 
 .topic-card-logo img:not(.loaded) {
@@ -115,14 +107,13 @@
 
 .topic-card-info {
     flex: 1;
-    min-width: 0; /* Crucial for text truncation */
+    min-width: 0;
     overflow: hidden;
 }
 
-/* Lighter font weight and proper truncation like quickref.me */
 .topic-card-title {
     font-size: 0.95rem;
-    font-weight: 400; /* Lighter weight like quickref.me */
+    font-weight: 400;
     line-height: 1.3;
     white-space: nowrap;
     overflow: hidden;
@@ -132,7 +123,7 @@
 
 .topic-card-description {
     font-size: 0.8rem;
-    font-weight: 400; /* Lighter weight */
+    font-weight: 400;
     line-height: 1.2;
     margin: 0;
     color: var(--text-secondary);
@@ -142,7 +133,6 @@
     overflow: hidden;
 }
 
-/* Make logo smaller to fit thinner cards */
 .topic-card .topic-card-logo img {
     width: 32px;
     height: 32px;
@@ -154,7 +144,6 @@
     font-size: 1rem;
 }
 
-/* Responsive breakpoints */
 @media (max-width: 1200px) {
     .topics-grid {
         grid-template-columns: repeat(3, 1fr);
@@ -201,7 +190,6 @@
         font-size: 0.7rem;
     }
     
-    /* Make logo even smaller on mobile */
     .topic-card .topic-card-logo img,
     .topic-card .topic-card-placeholder {
         width: 28px;
@@ -209,11 +197,6 @@
         font-size: 0.9rem;
     }
 }
-
-
-/* ------------------------------------------- */
-/* -------------- CHEATSHEETS ---------------- */
-/* ------------------------------------------- */
 
 .cheatsheet-header {
     text-align: center;
@@ -256,11 +239,6 @@
     gap: 1.5rem;
 }
 
-/* ------------------------------------------- */
-/* --------------- ADMIN PANEL --------------- */
-/* ------------------------------------------- */
-
-/* ----- ADMIN HEADER ----- */
 .admin-header {
     display: flex;
     justify-content: space-between;
@@ -287,7 +265,6 @@
     flex-wrap: wrap;
 }
 
-/* Admin Search - Fixed positioning */
 .admin-search {
     position: relative;
     min-width: 250px;
@@ -316,7 +293,6 @@
     color: var(--text-muted);
 }
 
-/* Responsive admin header */
 @media (max-width: 768px) {
     .admin-header {
         flex-direction: column;
@@ -356,7 +332,6 @@
     }
 }
 
-/* ----- DASHBOARD CATEGORIES - VERTICAL STACK ----- */
 .categories-container {
     display: flex;
     flex-direction: column;
@@ -403,14 +378,12 @@
     font-weight: 500;
 }
 
-/* ----- TOPICS GRID - 3 COLUMN LAYOUT ----- */
 .topics-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1rem;
 }
 
-/* ----- ADMIN TOPIC CARDS - GRID LAYOUT ----- */
 .topic-card.admin.draggable {
     display: flex;
     flex-direction: column;
@@ -459,7 +432,7 @@
 .topic-info {
     flex: 1;
     min-width: 0;
-    padding-left: 2rem; /* Add padding to make space for handle */
+    padding-left: 2rem;
     padding-right: 30px;
 }
 
@@ -526,7 +499,6 @@
     text-align: center;
 }
 
-/* ----- COLOR INDICATOR FOR ADMIN CARDS ----- */
 .topic-color-indicator {
     position: absolute;
     top: 12px;
@@ -537,7 +509,6 @@
     border: 2px solid var(--border-color);
 }
 
-/* ----- EMPTY CATEGORY STATE ----- */
 .empty-category {
     display: flex;
     align-items: center;
@@ -558,7 +529,6 @@
     font-style: italic;
 }
 
-/* ----- DRAG & DROP STYLES ----- */
 .sortable-ghost {
     opacity: 0.6;
     background: var(--success-bg) !important;
@@ -571,10 +541,6 @@
     border-color: var(--success-border) !important;
     box-shadow: 0 4px 12px rgba(104, 211, 145, 0.3);
 }
-
-/* ------------------------------------------- */
-/* ------------ CATEGORIES ADMIN ------------- */
-/* ------------------------------------------- */
 
 .categories-list {
     max-width: 600px;
@@ -622,11 +588,6 @@
     cursor: grabbing;
 }
 
-/* ------------------------------------------- */
-/* ------------ SECTIONS & ITEMS ------------- */
-/* ------------------------------------------- */
-
-/* ----- MANAGE SECTIONS ----- */
 .section-card {
     background: var(--card-bg);
     border: 1px solid var(--border-color);
@@ -653,7 +614,6 @@
     gap: 0.5rem;
 }
 
-/* ----- ITEMS LIST ----- */
 .items-list {
     border-top: 1px solid var(--border-color);
     padding-top: 1rem;
@@ -739,7 +699,6 @@
     background: var(--card-bg);
 }
 
-/* ----- COMPACT BOOKMARK STYLES (Quickref.me style) ----- */
 .bookmark-title {
     position: absolute;
     top: 0;
@@ -752,7 +711,7 @@
     max-width: 160px;
     z-index: 10;
     line-height: 1.1;
-    height: 24px; /* Even more compact */
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -774,7 +733,7 @@
 
 .card {
     position: relative;
-    padding-top: 2rem; /* Less space needed for compact bookmark */
+    padding-top: 2rem;
 }
 
 .card-content {
@@ -785,10 +744,9 @@
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
 }
 
-/* ----- QUICKREF-STYLE GRID ----- */
 .masonry-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr)); /* Equal columns */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-auto-rows: minmax(100px, auto);
     grid-auto-flow: dense;
     gap: 1.5rem;
@@ -825,12 +783,11 @@
 }
 
 .card-stretch {
-    grid-column: 1 / -1; /* Span from first to last column */
+    grid-column: 1 / -1;
     grid-row: span 2;
     min-height: 200px;
 }
 
-/* Ensure content is scrollable if it overflows */
 .card-content {
     max-height: 100%;
     overflow-y: auto;
@@ -842,7 +799,6 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* Responsive */
 @media (max-width: 1024px) {
     .masonry-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -869,7 +825,6 @@
         min-height: auto;
     }
     
-    /* Admin search on mobile */
     .admin-search {
         position: static;
         transform: none;

@@ -49,27 +49,20 @@ function initializeSectionFilters() {
     
     if (!filterButtons.length || !sections.length) return;
     
-    // Flag to track if we're handling a hash navigation (so we don't apply filters)
     let isHashNavigation = false;
     
     filterButtons.forEach(button => {
         button.addEventListener('click', function() {
-            // If this is hash navigation, skip filter application
             if (isHashNavigation) {
                 isHashNavigation = false;
                 return;
             }
             
-            // Remove active class from all buttons
             filterButtons.forEach(btn => btn.classList.remove('active'));
-            
-            // Add active class to clicked button
             this.classList.add('active');
             
-            // Get selected section
             const selectedSection = this.dataset.section;
             
-            // Show/hide sections
             sections.forEach(section => {
                 if (selectedSection === 'all' || section.dataset.sectionId === selectedSection) {
                     section.style.display = 'block';
@@ -78,7 +71,6 @@ function initializeSectionFilters() {
                 }
             });
             
-            // If a specific section is selected and we're not on mobile, scroll to it
             if (selectedSection !== 'all' && window.innerWidth > 768) {
                 const targetSection = document.querySelector(`[data-section-id="${selectedSection}"]`);
                 if (targetSection) {
@@ -93,47 +85,31 @@ function initializeSectionFilters() {
         });
     });
     
-    // Handle hash navigation to specific sections/items - WITHOUT applying filters
     if (window.location.hash) {
         const elementId = window.location.hash.substring(1);
-        
-        // Set flag to indicate hash navigation
         isHashNavigation = true;
         
-        // Ensure "All" filter is active and all sections are visible
         const allSectionsButton = document.querySelector('[data-section="all"]');
         if (allSectionsButton) {
-            // Remove active class from all buttons
             filterButtons.forEach(btn => btn.classList.remove('active'));
-            // Add active class to "All" button
             allSectionsButton.classList.add('active');
             
-            // Show all sections
             sections.forEach(section => {
                 section.style.display = 'block';
             });
         }
-        
-        // The actual scrolling to the element will be handled by the main app.js
     }
     
-    // Also handle browser back/forward button navigation
     window.addEventListener('hashchange', function() {
         if (window.location.hash) {
             const elementId = window.location.hash.substring(1);
-            
-            // Set flag to indicate hash navigation
             isHashNavigation = true;
             
-            // Ensure "All" filter is active and all sections are visible
             const allSectionsButton = document.querySelector('[data-section="all"]');
             if (allSectionsButton) {
-                // Remove active class from all buttons
                 filterButtons.forEach(btn => btn.classList.remove('active'));
-                // Add active class to "All" button
                 allSectionsButton.classList.add('active');
                 
-                // Show all sections
                 sections.forEach(section => {
                     section.style.display = 'block';
                 });
@@ -142,7 +118,6 @@ function initializeSectionFilters() {
     });
 }
     
-    // Initialize section filters
-    document.addEventListener('DOMContentLoaded', initializeSectionFilters);
+document.addEventListener('DOMContentLoaded', initializeSectionFilters);
 </script>
 {% endblock %}

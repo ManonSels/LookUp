@@ -3,15 +3,12 @@ import os
 from flask import g, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 
-# ----- DB CONNECTION ----- #
 def get_db():
     """Get database connection for current request context"""
     if 'db' not in g:
-        # Use instance folder for database
         instance_path = current_app.instance_path
         db_path = os.path.join(instance_path, 'site.db')
         
-        # Ensure instance directory exists
         os.makedirs(instance_path, exist_ok=True)
         
         g.db = sqlite3.connect(db_path)
@@ -31,7 +28,6 @@ class DBConnection:
         return self.cursor
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        # Commit changes and close connection for schema operations
         if exc_type is None:
             self.conn.commit()
         else:
@@ -45,12 +41,10 @@ def db_connection(func):
             return result
     return wrapper
 
-# ----- HASH PASSWORD ----- #
 def hash_password(password):
     """Hash a password for storing"""
     return generate_password_hash(password)
 
-# ----- VERIFY PASSWORD ----- #
 def verify_password(password, password_hash):
     """Verify a stored password against one provided by user"""
     return check_password_hash(password_hash, password)

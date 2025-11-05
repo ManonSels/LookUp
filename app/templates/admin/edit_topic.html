@@ -219,7 +219,6 @@ document.addEventListener('DOMContentLoaded', function() {
             colorPreviewLight.textContent = this.value;
             colorPreviewLight.style.backgroundColor = this.value;
         });
-        // Set initial preview
         colorPreviewLight.style.backgroundColor = colorInputLight.value;
     }
     
@@ -228,7 +227,6 @@ document.addEventListener('DOMContentLoaded', function() {
             colorPreviewDark.textContent = this.value;
             colorPreviewDark.style.backgroundColor = this.value;
         });
-        // Set initial preview
         colorPreviewDark.style.backgroundColor = colorInputDark.value;
     }
 
@@ -240,16 +238,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const removeLogoInput = document.getElementById(inputId);
             
             if (confirm(`Are you sure you want to remove the ${theme} theme logo? This cannot be undone.`)) {
-                // Hide the current logo display
                 const currentLogoDiv = this.closest('.current-logo');
                 if (currentLogoDiv) {
                     currentLogoDiv.style.display = 'none';
                 }
                 
-                // Set the hidden input to true so the backend knows to remove the logo
                 removeLogoInput.value = 'true';
                 
-                // Show a success message
                 alert(`${theme.charAt(0).toUpperCase() + theme.slice(1)} theme logo will be removed when you save the topic.`);
             }
         });
@@ -261,7 +256,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const checkbox = option.querySelector('.category-checkbox');
         const label = option.querySelector('.category-label');
         
-        // Set initial state
         if (checkbox.checked) {
             label.style.background = 'var(--accent-color)';
             label.style.borderColor = 'var(--accent-color)';

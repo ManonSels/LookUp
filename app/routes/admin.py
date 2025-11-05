@@ -5,7 +5,6 @@ from app.models.topic import TopicModel
 from app.models.section import SectionModel
 from app.models.section_item import SectionItemModel
 from app.models.category import CategoryModel 
-from app.models.topic_category import TopicCategoryModel
 from werkzeug.utils import secure_filename
 from app.utils.upload import save_topic_logo, delete_topic_logo
 
@@ -22,11 +21,6 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-
-# ------------------------------------------- #
-# ---------------- DASHBOARD ---------------- #
-# ------------------------------------------- #
-
 @admin_bp.route('/')
 @admin_required
 def dashboard():
@@ -39,11 +33,6 @@ def dashboard():
                          categorized_topics=categorized_topics,
                          categories=categories)
 
-
-# ------------------------------------------- #
-# --------------- CATEGORIES ---------------- #
-# ------------------------------------------- #
-
 @admin_bp.route('/categories')
 @admin_required
 def manage_categories():
@@ -51,7 +40,6 @@ def manage_categories():
     categories = category_model.get_all()
     return render_template('admin/categories.html', categories=categories)
 
-# ------- NEW CATEGORY ------- #
 @admin_bp.route('/category/new', methods=['GET', 'POST'])
 @admin_required
 def new_category():
@@ -63,7 +51,7 @@ def new_category():
             return render_template('admin/edit_category.html')
         
         category_model = CategoryModel()
-        category_id = category_model.create(name)  # Let the model handle display_order automatically
+        category_id = category_model.create(name)
         
         if category_id:
             flash('Category created successfully!', 'success')
@@ -73,7 +61,6 @@ def new_category():
     
     return render_template('admin/edit_category.html')
 
-# ------- EDIT CATEGORY ------- #
 @admin_bp.route('/category/<int:category_id>/edit', methods=['GET', 'POST'])
 @admin_required
 def edit_category(category_id):
@@ -91,7 +78,6 @@ def edit_category(category_id):
             flash('Category name is required', 'error')
             return render_template('admin/edit_category.html', category=category)
         
-        # Keep the current display_order - don't allow changing it here
         if category_model.update(category_id, name, category.display_order):
             flash('Category updated successfully!', 'success')
             return redirect(url_for('admin.manage_categories'))
@@ -100,8 +86,6 @@ def edit_category(category_id):
     
     return render_template('admin/edit_category.html', category=category)
 
-
-# ------- DELETE CATEGORY ------- #
 @admin_bp.route('/category/<int:category_id>/delete')
 @admin_required
 def delete_category(category_id):
@@ -120,7 +104,6 @@ def delete_category(category_id):
     
     return redirect(url_for('admin.manage_categories'))
 
-# ------ REORDER CATEGORIES ------ #
 @admin_bp.route('/api/categories/reorder', methods=['POST'])
 @admin_required
 def api_reorder_categories():
@@ -132,13 +115,7 @@ def api_reorder_categories():
         return jsonify({'success': True})
     else:
         return jsonify({'success': False, 'error': 'Failed to reorder categories'})
-    
 
-# ------------------------------------------- #
-# ----------------- TOPICS ------------------ #
-# ------------------------------------------- #
-
-# --------- NEW TOPIC --------- #
 @admin_bp.route('/topic/new', methods=['GET', 'POST'])
 @admin_required
 def new_topic():
@@ -154,7 +131,6 @@ def new_topic():
         card_color_light = request.form.get('card_color_light', '#ffffff')
         card_color_dark = request.form.get('card_color_dark', '#1a1a1a')
         
-        # Handle logo uploads
         logo_filename_light = None
         logo_filename_dark = None
         
@@ -180,7 +156,6 @@ def new_topic():
             flash('At least one category is required', 'error')
             return render_template('admin/edit_topic.html', categories=categories)
         
-        # Convert category_ids to integers
         category_ids = [int(cid) for cid in category_ids]
         
         topic_id = topic_model.create_topic(slug, title, description, current_user.id, category_ids, is_published, card_color_light, card_color_dark, logo_filename_light, logo_filename_dark)
@@ -193,7 +168,6 @@ def new_topic():
     
     return render_template('admin/edit_topic.html', categories=categories)
 
-# -------- EDIT TOPIC -------- #
 @admin_bp.route('/topic/<int:topic_id>/edit', methods=['GET', 'POST'])
 @admin_required
 def edit_topic(topic_id):
@@ -216,11 +190,9 @@ def edit_topic(topic_id):
         remove_logo_light = 'remove_logo_light' in request.form
         remove_logo_dark = 'remove_logo_dark' in request.form
         
-        # Handle logo uploads/removals
         logo_filename_light = topic.logo_filename_light if hasattr(topic, 'logo_filename_light') else None
         logo_filename_dark = topic.logo_filename_dark if hasattr(topic, 'logo_filename_dark') else None
         
-        # Handle light theme logo
         if remove_logo_light and logo_filename_light:
             delete_topic_logo(logo_filename_light)
             logo_filename_light = None
@@ -235,7 +207,6 @@ def edit_topic(topic_id):
                 else:
                     flash('Error uploading light theme logo', 'error')
         
-        # Handle dark theme logo
         if remove_logo_dark and logo_filename_dark:
             delete_topic_logo(logo_filename_dark)
             logo_filename_dark = None
@@ -254,7 +225,6 @@ def edit_topic(topic_id):
             flash('At least one category is required', 'error')
             return render_template('admin/edit_topic.html', topic=topic, categories=categories)
         
-        # Convert category_ids to integers
         category_ids = [int(cid) for cid in category_ids]
         
         if topic_model.update_topic(topic_id, slug, title, description, category_ids, is_published, card_color_light, card_color_dark, logo_filename_light, logo_filename_dark):
@@ -265,7 +235,6 @@ def edit_topic(topic_id):
     
     return render_template('admin/edit_topic.html', topic=topic, categories=categories)
 
-# -------- DELETE TOPIC -------- #
 @admin_bp.route('/topic/<int:topic_id>/delete')
 @admin_required
 def delete_topic(topic_id):
@@ -277,7 +246,6 @@ def delete_topic(topic_id):
     
     return redirect(url_for('admin.dashboard'))
 
-# ------ REORDER TOPICS ------ #
 @admin_bp.route('/api/topics/reorder', methods=['POST'])
 @admin_required
 def api_reorder_topics():
@@ -297,7 +265,6 @@ def api_reorder_topics():
         print(f"Error reordering topics: {e}")
         return jsonify({'success': False, 'error': str(e)})
 
-# ------ CHANGE TOPIC CATEGORY ------ #
 @admin_bp.route('/api/topics/change_category', methods=['POST'])
 @admin_required
 def api_change_topic_category():
@@ -307,16 +274,14 @@ def api_change_topic_category():
             topic_id = request.json.get('topic_id')
             category_id = request.json.get('category_id')
             old_category_id = request.json.get('old_category_id')
-            action = request.json.get('action')  # 'add' or 'move'
+            action = request.json.get('action')
             
             if action == 'add':
-                # Check if already exists
                 cursor.execute(
                     'SELECT id FROM topic_category WHERE topic_id = ? AND category_id = ?',
                     (topic_id, category_id)
                 )
                 if not cursor.fetchone():
-                    # Get next display order
                     cursor.execute(
                         'SELECT COALESCE(MAX(display_order), -1) FROM topic_category WHERE category_id = ?',
                         (category_id,)
@@ -329,13 +294,11 @@ def api_change_topic_category():
                         (topic_id, category_id, display_order)
                     )
             elif action == 'move':
-                # Remove from old category and add to new category
                 cursor.execute(
                     'DELETE FROM topic_category WHERE topic_id = ? AND category_id = ?',
                     (topic_id, old_category_id)
                 )
                 
-                # Get next display order in new category
                 cursor.execute(
                     'SELECT COALESCE(MAX(display_order), -1) FROM topic_category WHERE category_id = ?',
                     (category_id,)
@@ -353,12 +316,6 @@ def api_change_topic_category():
         print(f"Error changing topic category: {e}")
         return jsonify({'success': False, 'error': str(e)})
 
-
-# ------------------------------------------- #
-# ---------------- SECTIONS ----------------- #
-# ------------------------------------------- #
-
-# ------- MANAGE SECTIONS ------- #
 @admin_bp.route('/topic/<int:topic_id>/sections')
 @admin_required
 def manage_sections(topic_id):
@@ -378,7 +335,6 @@ def manage_sections(topic_id):
     
     return render_template('admin/manage_sections.html', topic=topic, sections=sections)
 
-# --------- NEW SECTION --------- #
 @admin_bp.route('/api/section/new', methods=['POST'])
 @admin_required
 def api_new_section():
@@ -393,8 +349,6 @@ def api_new_section():
     else:
         return jsonify({'success': False, 'error': 'Failed to create section'})
 
-
-# -------- UPDATE SECTION -------- #
 @admin_bp.route('/api/section/update', methods=['POST'])
 @admin_required
 def api_update_section():
@@ -408,7 +362,6 @@ def api_update_section():
     else:
         return jsonify({'success': False, 'error': 'Failed to update section'})
 
-# -------- DELETE SECTION -------- #
 @admin_bp.route('/api/section/delete', methods=['POST'])
 @admin_required
 def api_delete_section():
@@ -420,7 +373,6 @@ def api_delete_section():
     else:
         return jsonify({'success': False, 'error': 'Failed to delete section'})
     
-# ------ REORDER SECTIONS ------ #
 @admin_bp.route('/api/sections/reorder', methods=['POST'])
 @admin_required
 def api_reorder_sections():
@@ -440,7 +392,6 @@ def api_reorder_sections():
         print(f"Error reordering sections: {e}")
         return jsonify({'success': False, 'error': str(e)})
 
-# ------ REORDER ITEMS ------ #
 @admin_bp.route('/api/items/reorder', methods=['POST'])
 @admin_required
 def api_reorder_items():
@@ -460,7 +411,6 @@ def api_reorder_items():
         print(f"Error reordering items: {e}")
         return jsonify({'success': False, 'error': str(e)})
 
-# ------ CHANGE ITEM SECTION ------ #
 @admin_bp.route('/api/items/change_section', methods=['POST'])
 @admin_required
 def api_change_item_section():
@@ -479,11 +429,6 @@ def api_change_item_section():
         print(f"Error changing item section: {e}")
         return jsonify({'success': False, 'error': str(e)})
 
-# ------------------------------------------- #
-# ------------------ ITEMS ------------------ #
-# ------------------------------------------- #
-    
-# -------- NEW ITEM -------- #
 @admin_bp.route('/section/<int:section_id>/item/new', methods=['GET', 'POST'])
 @admin_required
 def new_item(section_id):
@@ -521,7 +466,6 @@ def new_item(section_id):
     
     return render_template('admin/edit_item.html', section=section)
 
-# ------- EDIT ITEM ------- #
 @admin_bp.route('/item/<int:item_id>/edit', methods=['GET', 'POST'])
 @admin_required
 def edit_item(item_id):
@@ -553,7 +497,6 @@ def edit_item(item_id):
     
     return render_template('admin/edit_item.html', section=section, item=item)
 
-# -------- DELETE ITEM  -------- #
 @admin_bp.route('/item/<int:item_id>/delete')
 @admin_required
 def delete_item(item_id):

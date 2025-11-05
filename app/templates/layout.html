@@ -6,12 +6,10 @@
     <title>{% block title %}LookUp{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <style>
-    /* Remove all transition styles - they're causing the flash */
     .search-modal {
         z-index: 1000;
     }
 
-    /* Scroll margins for proper navigation */
     .section {
         scroll-margin-top: 90px;
     }
@@ -20,7 +18,6 @@
         scroll-margin-top: 90px;
     }
 
-    /* Loading states */
     .loading-overlay {
         position: fixed;
         top: 0;
@@ -50,12 +47,10 @@
     }
 </style>
     <script>
-        // Apply theme immediately to prevent flash
         (function() {
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
             
-            // Add admin page class if on admin route
             if (window.location.pathname.startsWith('/admin')) {
                 document.body.classList.add('admin-page');
             }

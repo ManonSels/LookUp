@@ -1,7 +1,3 @@
-/* ------------------------------------------- */
-/* --------------- NAVIGATION ---------------- */
-/* ------------------------------------------- */
-
 .navbar {
     background: var(--bg-primary);
     border-bottom: 1px solid var(--border-color);
@@ -69,10 +65,6 @@
     border-color: var(--accent-color);
 }
 
-/* ------------------------------------------- */
-/* -------------- MAIN CONTENT --------------- */
-/* ------------------------------------------- */
-
 .main-content {
     max-width: 1200px;
     margin: 0 auto;
@@ -84,10 +76,6 @@
     background: var(--admin-bg);
     min-height: calc(100vh - 80px);
 }
-
-/* ------------------------------------------- */
-/* ----------------- FOOTER ------------------ */
-/* ------------------------------------------- */
 
 .footer {
     background: var(--footer-bg);
@@ -102,7 +90,7 @@
     margin: 0 auto;
     padding: 0 2rem;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr; /* Three equal columns */
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 2rem;
     align-items: start;
 }
@@ -154,7 +142,6 @@
     font-weight: 600;
 }
 
-/* COMPACT 2×2 GRID FOR RECENT TOPICS */
 .recent-topics-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -173,7 +160,7 @@
     text-decoration: none;
     color: var(--text-primary);
     transition: all 0.2s;
-    min-height: 50px; /* More compact */
+    min-height: 50px;
     font-size: 0.85rem;
 }
 
@@ -242,7 +229,6 @@
     color: var(--text-primary);
 }
 
-/* Hide footer on admin pages */
 body.admin-page .footer {
     display: none;
 }
@@ -251,18 +237,14 @@ body.admin-page .main-content {
     min-height: calc(100vh - 80px);
 }
 
-/* ------------------------------------------- */
-/* ------------- RESPONSIVE DESIGN ----------- */
-/* ------------------------------------------- */
-
 @media (max-width: 1024px) {
     .footer-container {
-        grid-template-columns: 1fr 1fr; /* Two columns on medium screens */
+        grid-template-columns: 1fr 1fr;
         gap: 1.5rem;
     }
     
     .footer-brand {
-        grid-column: 1 / -1; /* Brand takes full width */
+        grid-column: 1 / -1;
         text-align: center;
     }
     
@@ -273,19 +255,16 @@ body.admin-page .main-content {
 }
 
 @media (max-width: 768px) {
-    /* Navigation */
     .nav-container {
         padding: 0 1rem;
         flex-direction: column;
         gap: 1rem;
     }
 
-    /* Main Content */
     .main-content {
         padding: 1rem;
     }
     
-    /* Footer */
     .footer {
         padding: 1.5rem 0 1rem 0;
     }

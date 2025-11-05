@@ -1,52 +1,47 @@
-// static/js/app.js
-
 // Global state
 let currentPage = window.location.pathname;
 let isTransitioning = false;
 let undoStack = [];
 let redoStack = [];
-
-// prevent duplicate auto-hash scrolling when we already handled it manually
 let suppressAutoHashScroll = false;
 
 // Theme toggle functionality
 document.addEventListener('DOMContentLoaded', function () {
-	const themeToggle = document.getElementById('themeToggle');
-	const themeIcon = document.getElementById('themeIcon');
-	const html = document.documentElement;
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const html = document.documentElement;
 
-	function setTheme(theme) {
-		html.setAttribute('data-theme', theme);
-		localStorage.setItem('theme', theme);
-		themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+    function setTheme(theme) {
+        html.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
 
-		// Update topic colors when theme changes
-		if (typeof updateTopicColors === 'function') {
-			updateTopicColors();
-		}
-		if (typeof updateAdminTopicColors === 'function') {
-			updateAdminTopicColors();
-		}
-	}
+        if (typeof updateTopicColors === 'function') {
+            updateTopicColors();
+        }
+        if (typeof updateAdminTopicColors === 'function') {
+            updateAdminTopicColors();
+        }
+    }
 
-	// Initialize theme
-	const currentTheme = localStorage.getItem('theme') || 'light';
-	setTheme(currentTheme);
+    // Initialize theme
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    setTheme(currentTheme);
 
-	// Toggle theme on button click
-	themeToggle.addEventListener('click', function () {
-		const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-		setTheme(newTheme);
-	});
+    // Toggle theme on button click
+    themeToggle.addEventListener('click', function () {
+        const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
+    });
 
-	// Initialize all functionality
-	initializeSearch();
-	initializePageSpecificFunctionality();
-	initializeUndoRedo();
-	initializeBackToTop();
-	initializeKeyboardNav();
-	initializeImageLoading();
-	initializeCodeCopy();
+    // Initialize all functionality
+    initializeSearch();
+    initializePageSpecificFunctionality();
+    initializeUndoRedo();
+    initializeBackToTop();
+    initializeKeyboardNav();
+    initializeImageLoading();
+    initializeCodeCopy();
 });
 
 // Undo/Redo functionality
@@ -61,9 +56,7 @@ function initializeUndoRedo() {
                 const action = undoStack.pop();
                 redoStack.push(action);
                 
-                // Execute undo action
                 if (action.type === 'reorder') {
-                    // Implement undo for reordering
                     showNotification('Changes undone', 3000);
                 }
                 
@@ -98,24 +91,19 @@ function resetSectionFilters() {
     const filterButtons = sectionFilters.querySelectorAll('.filter-btn');
     
     if (allSectionsBtn) {
-        // Remove active class from all buttons
         filterButtons.forEach(btn => btn.classList.remove('active'));
-        // Add active class to "All" button
         allSectionsBtn.classList.add('active');
         
-        // Show all sections
         const sections = document.querySelectorAll('.section');
         sections.forEach(section => {
             section.style.display = 'block';
         });
-        
-        console.log('Section filters reset to "All"');
     }
 }
 
 function pushToUndoStack(action) {
     undoStack.push(action);
-    redoStack = []; // Clear redo stack when new action is performed
+    redoStack = [];
     showNotification('Action completed - Undo available', 3000);
 }
 
@@ -161,7 +149,7 @@ function initializeBackToTop() {
 // Keyboard navigation
 function initializeKeyboardNav() {
     document.addEventListener('keydown', (e) => {
-        // Ctrl/Cmd + Arrow Left/Right for topic navigation (cheatsheet pages)
+        // Ctrl/Cmd + Arrow Left/Right for topic navigation
         if ((e.ctrlKey || e.metaKey) && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
             const topics = document.querySelectorAll('.topic-card');
             if (topics.length > 0) {
@@ -204,7 +192,6 @@ function initializeImageLoading() {
         } else {
             img.addEventListener('load', () => img.classList.add('loaded'));
             img.addEventListener('error', () => {
-                // Hide broken images and show placeholder
                 const placeholder = document.createElement('div');
                 placeholder.className = 'image-placeholder';
                 placeholder.innerHTML = '📄';
@@ -226,7 +213,6 @@ function initializeImageLoading() {
 
 // Code copy functionality
 function initializeCodeCopy() {
-    // Add copy buttons to code blocks
     document.querySelectorAll('pre code').forEach(block => {
         const pre = block.closest('pre');
         if (!pre.querySelector('.copy-btn')) {
@@ -259,56 +245,54 @@ function initializeCodeCopy() {
 
 // Search functionality
 function initializeSearch() {
-	const searchModal = document.getElementById('searchModal');
-	const searchTrigger = document.getElementById('searchTrigger');
-	const closeSearch = document.getElementById('closeSearch');
-	const searchInput = document.getElementById('searchInput');
-	const topicsList = document.getElementById('topicsList');
-	const searchResults = document.getElementById('searchResults');
-	const topicContent = document.getElementById('topicContent');
-	const searchContentEmpty = document.querySelector('.search-content-empty');
+    const searchModal = document.getElementById('searchModal');
+    const searchTrigger = document.getElementById('searchTrigger');
+    const closeSearch = document.getElementById('closeSearch');
+    const searchInput = document.getElementById('searchInput');
+    const topicsList = document.getElementById('topicsList');
+    const searchResults = document.getElementById('searchResults');
+    const topicContent = document.getElementById('topicContent');
+    const searchContentEmpty = document.querySelector('.search-content-empty');
 
-	let allTopics = [];
-	let currentTopicId = null;
-	let searchTimeout;
+    let allTopics = [];
+    let currentTopicId = null;
+    let searchTimeout;
 
-	// Open search modal
-	if (searchTrigger) {
-		searchTrigger.addEventListener('click', function () {
-			searchModal.style.display = 'block';
-			searchModal.style.opacity = '0';
-			searchModal.style.transition = 'opacity 0.2s ease';
-			setTimeout(() => {
-				searchModal.style.opacity = '1';
-			}, 10);
-			
-			// Load topics without loading screen
-			loadAllTopics();
-			setTimeout(() => {
+    // Open search modal
+    if (searchTrigger) {
+        searchTrigger.addEventListener('click', function () {
+            searchModal.style.display = 'block';
+            searchModal.style.opacity = '0';
+            searchModal.style.transition = 'opacity 0.2s ease';
+            setTimeout(() => {
+                searchModal.style.opacity = '1';
+            }, 10);
+            
+            loadAllTopics();
+            setTimeout(() => {
                 searchInput.focus();
             }, 100);
-		});
-	}
+        });
+    }
 
-	// Close search modal
-	if (closeSearch) {
-		closeSearch.addEventListener('click', closeSearchModal);
-	}
-	if (searchModal) {
-		searchModal.addEventListener('click', function (e) {
-			if (e.target === searchModal) {
-				closeSearchModal();
-			}
-		});
-	}
+    // Close search modal
+    if (closeSearch) {
+        closeSearch.addEventListener('click', closeSearchModal);
+    }
+    if (searchModal) {
+        searchModal.addEventListener('click', function (e) {
+            if (e.target === searchModal) {
+                closeSearchModal();
+            }
+        });
+    }
 
-	// Handle search input
+    // Handle search input
     if (searchInput) {
         searchInput.addEventListener('input', function () {
             clearTimeout(searchTimeout);
             const query = this.value.trim();
 
-            // Reset section filters when user starts typing (only on cheatsheet pages)
             if (query.length > 0) {
                 resetSectionFilters();
             }
@@ -325,141 +309,136 @@ function initializeSearch() {
         });
     }
 
-	// Keyboard shortcuts
-	document.addEventListener('keydown', function (e) {
-		if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-			e.preventDefault();
-			if (searchModal) {
-				searchModal.style.display = 'block';
-				searchModal.style.opacity = '0';
-				searchModal.style.transition = 'opacity 0.2s ease';
-				setTimeout(() => {
-					searchModal.style.opacity = '1';
-				}, 10);
-				setTimeout(() => {
-					if (searchInput) searchInput.focus();
-				}, 100);
-			}
-		}
-
-		if (e.key === 'Escape' && searchModal && searchModal.style.display === 'block') {
-			closeSearchModal();
-		}
-	});
-
-        function closeSearchModal() {
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function (e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
             if (searchModal) {
+                searchModal.style.display = 'block';
                 searchModal.style.opacity = '0';
-                searchModal.style.transition = 'opacity 0.3s ease';
+                searchModal.style.transition = 'opacity 0.2s ease';
                 setTimeout(() => {
-                    searchModal.style.display = 'none';
-                }, 300);
+                    searchModal.style.opacity = '1';
+                }, 10);
+                setTimeout(() => {
+                    if (searchInput) searchInput.focus();
+                }, 100);
             }
-            if (searchInput) {
-                searchInput.value = '';
-            }
-            showAllTopics();
-            showTopicContentEmpty();
-            currentTopicId = null;
-            
-            // Reset section filters when closing search (only on cheatsheet pages)
-            resetSectionFilters();
         }
 
-	function loadAllTopics() {
-		fetch('/search/topics')
-			.then(response => {
-				if (!response.ok) {
-					throw new Error('Network response was not ok');
-				}
-				return response.json();
-			})
-			.then(data => {
-				allTopics = data.topics || [];
-				displayAllTopics();
-			})
-			.catch(error => {
-				console.error('Error loading topics:', error);
-				if (topicsList) {
-					topicsList.innerHTML = '<div class="search-error">Error loading topics. Please try again.</div>';
-				}
-			});
-	}
+        if (e.key === 'Escape' && searchModal && searchModal.style.display === 'block') {
+            closeSearchModal();
+        }
+    });
 
-	function displayAllTopics() {
-		if (!topicsList) return;
+    function closeSearchModal() {
+        if (searchModal) {
+            searchModal.style.opacity = '0';
+            searchModal.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => {
+                searchModal.style.display = 'none';
+            }, 300);
+        }
+        if (searchInput) {
+            searchInput.value = '';
+        }
+        showAllTopics();
+        showTopicContentEmpty();
+        currentTopicId = null;
+        
+        resetSectionFilters();
+    }
 
-		let html = '';
-		allTopics.forEach(topic => {
-			html += `
+    function loadAllTopics() {
+        fetch('/search/topics')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                allTopics = data.topics || [];
+                displayAllTopics();
+            })
+            .catch(error => {
+                console.error('Error loading topics:', error);
+                if (topicsList) {
+                    topicsList.innerHTML = '<div class="search-error">Error loading topics. Please try again.</div>';
+                }
+            });
+    }
+
+    function displayAllTopics() {
+        if (!topicsList) return;
+
+        let html = '';
+        allTopics.forEach(topic => {
+            html += `
                 <div class="topic-item ${currentTopicId === topic.id ? 'active' : ''}" 
                      data-topic-id="${topic.id}">
                     <div class="topic-title">${topic.title}</div>
                     <div class="topic-category">${topic.category}</div>
                 </div>
             `;
-		});
+        });
 
-		topicsList.innerHTML = html;
+        topicsList.innerHTML = html;
 
-		// Add click handlers
-		document.querySelectorAll('.topic-item').forEach(item => {
-			item.addEventListener('click', function () {
-				const topicId = this.getAttribute('data-topic-id');
-				selectTopic(topicId);
-			});
-		});
-	}
+        document.querySelectorAll('.topic-item').forEach(item => {
+            item.addEventListener('click', function () {
+                const topicId = this.getAttribute('data-topic-id');
+                selectTopic(topicId);
+            });
+        });
+    }
 
-	function selectTopic(topicId) {
-		currentTopicId = topicId;
+    function selectTopic(topicId) {
+        currentTopicId = topicId;
 
-		// Update active state
-		document.querySelectorAll('.topic-item').forEach(item => {
-			item.classList.remove('active');
-		});
-		const activeItem = document.querySelector(`[data-topic-id="${topicId}"]`);
-		if (activeItem) {
-			activeItem.classList.add('active');
-		}
+        document.querySelectorAll('.topic-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        const activeItem = document.querySelector(`[data-topic-id="${topicId}"]`);
+        if (activeItem) {
+            activeItem.classList.add('active');
+        }
 
-		// Load topic content without loading screen
-		fetch(`/search/topic/${topicId}`)
-			.then(response => {
-				if (!response.ok) {
-					throw new Error('Network response was not ok');
-				}
-				return response.json();
-			})
-			.then(data => {
-				displayTopicContent(data);
-			})
-			.catch(error => {
-				console.error('Error loading topic content:', error);
-				if (topicContent) {
-					topicContent.innerHTML = '<div class="search-error">Error loading topic content. Please try again.</div>';
-				}
-			});
-	}
+        fetch(`/search/topic/${topicId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                displayTopicContent(data);
+            })
+            .catch(error => {
+                console.error('Error loading topic content:', error);
+                if (topicContent) {
+                    topicContent.innerHTML = '<div class="search-error">Error loading topic content. Please try again.</div>';
+                }
+            });
+    }
 
-	function displayTopicContent(data) {
-		if (!topicContent || !searchResults || !searchContentEmpty) return;
+    function displayTopicContent(data) {
+        if (!topicContent || !searchResults || !searchContentEmpty) return;
 
-		// Hide search results and empty state, show topic content
-		searchResults.style.display = 'none';
-		searchContentEmpty.style.display = 'none';
-		topicContent.style.display = 'block';
+        searchResults.style.display = 'none';
+        searchContentEmpty.style.display = 'none';
+        topicContent.style.display = 'block';
 
-		let html = `
+        let html = `
             <div class="topic-header">
                 <h2>${data.topic.title}</h2>
                 ${data.topic.description ? `<p class="topic-description">${data.topic.description}</p>` : ''}
             </div>
         `;
 
-		if (data.sections && data.sections.length > 0) {
-			data.sections.forEach(section => {
-				html += `
+        if (data.sections && data.sections.length > 0) {
+            data.sections.forEach(section => {
+                html += `
                     <div class="content-section">
                         <h3 class="section-title">
                             <a href="/${data.topic.slug}#section-${section.id}" onclick="navigateToSection('${data.topic.slug}', 'section-${section.id}')">
@@ -477,55 +456,55 @@ function initializeSearch() {
                         </div>
                     </div>
                 `;
-			});
-		} else {
-			html += '<div class="empty-section">No sections available for this topic.</div>';
-		}
+            });
+        } else {
+            html += '<div class="empty-section">No sections available for this topic.</div>';
+        }
 
-		topicContent.innerHTML = html;
-	}
+        topicContent.innerHTML = html;
+    }
 
-	function performSearch(query) {
-		if (!searchResults || !topicContent || !searchContentEmpty) return;
+    function performSearch(query) {
+        if (!searchResults || !topicContent || !searchContentEmpty) return;
 
-		searchResults.innerHTML = '<div class="search-loading">Searching...</div>';
-		searchResults.style.display = 'block';
-		topicContent.style.display = 'none';
-		searchContentEmpty.style.display = 'none';
+        searchResults.innerHTML = '<div class="search-loading">Searching...</div>';
+        searchResults.style.display = 'block';
+        topicContent.style.display = 'none';
+        searchContentEmpty.style.display = 'none';
 
-		fetch(`/search/query?q=${encodeURIComponent(query)}`)
-			.then(response => {
-				if (!response.ok) {
-					throw new Error('Network response was not ok');
-				}
-				return response.json();
-			})
-			.then(data => {
-				displaySearchResults(data, query);
-			})
-			.catch(error => {
-				console.error('Search error:', error);
-				if (searchResults) {
-					searchResults.innerHTML = '<div class="search-error">Error performing search. Please try again.</div>';
-				}
-			});
-	}
+        fetch(`/search/query?q=${encodeURIComponent(query)}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                displaySearchResults(data, query);
+            })
+            .catch(error => {
+                console.error('Search error:', error);
+                if (searchResults) {
+                    searchResults.innerHTML = '<div class="search-error">Error performing search. Please try again.</div>';
+                }
+            });
+    }
 
-	function displaySearchResults(data, query) {
-		if (!searchResults) return;
+    function displaySearchResults(data, query) {
+        if (!searchResults) return;
 
-		let html = '';
+        let html = '';
 
-		if (!data.results || data.results.length === 0) {
-			html = `
+        if (!data.results || data.results.length === 0) {
+            html = `
                 <div class="search-empty">
                     <p>No results found for "<strong>${query}</strong>"</p>
                     <p class="search-hint">Try different keywords or check spelling</p>
                 </div>
             `;
-		} else {
-			data.results.forEach(result => {
-				html += `
+        } else {
+            data.results.forEach(result => {
+                html += `
                     <div class="search-topic-result">
                         <h3 class="search-topic-title">
                             <a href="/${result.topic.slug}" onclick="navigateToTopic('${result.topic.slug}')">
@@ -536,9 +515,9 @@ function initializeSearch() {
                         <div class="search-topic-sections">
                 `;
 
-				if (result.sections && result.sections.length > 0) {
-					result.sections.forEach(section => {
-						html += `
+                if (result.sections && result.sections.length > 0) {
+                    result.sections.forEach(section => {
+                        html += `
                             <div class="search-section-result">
                                 <h4 class="search-section-title">
                                     <a href="/${result.topic.slug}#section-${section.id}" onclick="navigateToSection('${result.topic.slug}', 'section-${section.id}')">
@@ -548,64 +527,62 @@ function initializeSearch() {
                                 <div class="search-section-items">
                         `;
 
-						if (section.items && section.items.length > 0) {
-							section.items.forEach(item => {
-								html += `
+                        if (section.items && section.items.length > 0) {
+                            section.items.forEach(item => {
+                                html += `
                                     <div class="search-item-result">
                                         <a href="/${result.topic.slug}#item-${item.id}" onclick="navigateToSection('${result.topic.slug}', 'item-${item.id}')">
                                             ${highlightText(item.title, query)}
                                         </a>
                                     </div>
                                 `;
-							});
-						}
+                            });
+                        }
 
-						html += `
+                        html += `
                                 </div>
                             </div>
                         `;
-					});
-				}
+                    });
+                }
 
-				html += `
+                html += `
                         </div>
                     </div>
                 `;
-			});
-		}
+            });
+        }
 
-		searchResults.innerHTML = html;
-	}
+        searchResults.innerHTML = html;
+    }
 
-	function showAllTopics() {
-		displayAllTopics();
-	}
+    function showAllTopics() {
+        displayAllTopics();
+    }
 
-	function showTopicContentEmpty() {
-		if (!searchResults || !topicContent || !searchContentEmpty) return;
-		searchResults.style.display = 'none';
-		topicContent.style.display = 'none';
-		searchContentEmpty.style.display = 'block';
-	}
+    function showTopicContentEmpty() {
+        if (!searchResults || !topicContent || !searchContentEmpty) return;
+        searchResults.style.display = 'none';
+        topicContent.style.display = 'none';
+        searchContentEmpty.style.display = 'block';
+    }
 
-	function highlightText(text, query) {
-		if (!text || !query) return text;
-		const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-		const regex = new RegExp(`(${escapedQuery})`, 'gi');
-		return text.replace(regex, '<mark>$1</mark>');
-	}
+    function highlightText(text, query) {
+        if (!text || !query) return text;
+        const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`(${escapedQuery})`, 'gi');
+        return text.replace(regex, '<mark>$1</mark>');
+    }
 }
 
 function navigateToTopic(topicSlug) {
-	closeSearchModal();
-	// Use client-side navigation instead of full page reload
-	const url = '/' + topicSlug;
-	navigateToUrl(url);
+    closeSearchModal();
+    const url = '/' + topicSlug;
+    navigateToUrl(url);
 }
 
 function navigateToSection(topicSlug, elementId) {
     closeSearchModal();
-    // Use full page reload instead of client-side navigation for hash links
     const url = '/' + topicSlug + '#' + elementId;
     window.location.href = url;
 }
@@ -614,12 +591,10 @@ function navigateToUrl(url) {
     const mainContent = document.querySelector('#mainContent');
     suppressAutoHashScroll = true;
 
-    // Store the target hash for later 
     const targetHash = window.location.hash;
     const newHash = new URL(url, window.location.origin).hash;
     const finalHash = newHash || targetHash;
 
-    // Instantly reset opacity (no visual flash)
     if (mainContent) {
         mainContent.style.transition = 'none';
         mainContent.style.opacity = '0';
@@ -645,23 +620,19 @@ function navigateToUrl(url) {
 
                 initializePageSpecificFunctionality();
 
-                // Remove any automatic hash scrolls
                 window.scrollTo(0, 0);
 
-                // Wait for the next frame to ensure content is rendered
                 requestAnimationFrame(() => {
-                    // Fade in content first
-                    mainContent.style.transition = 'opacity 0.6s ease'; // Increased from 0.3s to 0.6s
+                    mainContent.style.transition = 'opacity 0.6s ease';
                     mainContent.style.opacity = '1';
                     
-                    // Then scroll to target after content is visible
                     setTimeout(() => {
                         if (finalHash) {
                             const elementId = finalHash.substring(1);
                             scrollToElement(elementId, true);
                         }
                         suppressAutoHashScroll = false;
-                    }, 600); // Increased from 350ms to 600ms
+                    }, 600);
                 });
             } else {
                 window.location.href = url;
@@ -674,92 +645,83 @@ function navigateToUrl(url) {
         .finally(() => {
             setTimeout(() => {
                 hidePageLoading();
-            }, 600); // Increased from 300ms to 600ms
+            }, 600);
         });
 }
 
 function showPageLoading() {
-	const loading = document.getElementById('pageLoading');
-	if (loading) {
-		loading.classList.add('active');
-	}
+    const loading = document.getElementById('pageLoading');
+    if (loading) {
+        loading.classList.add('active');
+    }
 }
 
 function hidePageLoading() {
-	const loading = document.getElementById('pageLoading');
-	if (loading) {
-		loading.classList.remove('active');
-	}
+    const loading = document.getElementById('pageLoading');
+    if (loading) {
+        loading.classList.remove('active');
+    }
 }
 
 // Global function to close search modal
 function closeSearchModal() {
-	const searchModal = document.getElementById('searchModal');
-	const searchInput = document.getElementById('searchInput');
-	const searchResults = document.getElementById('searchResults');
-	const topicContent = document.getElementById('topicContent');
-	const searchContentEmpty = document.querySelector('.search-content-empty');
+    const searchModal = document.getElementById('searchModal');
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    const topicContent = document.getElementById('topicContent');
+    const searchContentEmpty = document.querySelector('.search-content-empty');
 
-	if (searchModal) {
-		searchModal.style.display = 'none';
-	}
-	if (searchInput) {
-		searchInput.value = '';
-	}
-	if (searchResults) {
-		searchResults.style.display = 'none';
-	}
-	if (topicContent) {
-		topicContent.style.display = 'none';
-	}
-	if (searchContentEmpty) {
-		searchContentEmpty.style.display = 'block';
-	}
+    if (searchModal) {
+        searchModal.style.display = 'none';
+    }
+    if (searchInput) {
+        searchInput.value = '';
+    }
+    if (searchResults) {
+        searchResults.style.display = 'none';
+    }
+    if (topicContent) {
+        topicContent.style.display = 'none';
+    }
+    if (searchContentEmpty) {
+        searchContentEmpty.style.display = 'block';
+    }
 }
 
 function initializePageSpecificFunctionality() {
-    // Initialize home page functionality
     if (typeof initializeHomePage === 'function') {
         initializeHomePage();
     }
 
-    // Initialize cheatsheet page functionality
     if (typeof initializeCheatsheetPage === 'function') {
         initializeCheatsheetPage();
     }
     
-    // Initialize category filters on homepage
     if (typeof initializeCategoryFilters === 'function') {
         initializeCategoryFilters();
     }
     
-    // Initialize admin search
     if (typeof initializeAdminSearch === 'function') {
         initializeAdminSearch();
     }
     
-    // Initialize auto-save for forms
     if (typeof initializeAutoSave === 'function') {
         initializeAutoSave();
     }
 
-    // Handle hash navigation with a slight delay to ensure content is ready
     if (window.location.hash && !suppressAutoHashScroll) {
         setTimeout(() => {
             const elementId = window.location.hash.substring(1);
-            // Use smooth scroll for direct page loads too
             scrollToElement(elementId, true);
         }, 100);
     }
     
-    // Initialize code copy on all pages
     setTimeout(initializeCodeCopy, 500);
 }
 
 function scrollToElement(elementId, smooth = true) {
     if (!elementId) return;
     
-    // Small delay to ensure DOM is fully updated
     setTimeout(() => {
         const element = document.getElementById(elementId);
         if (!element) {
@@ -771,7 +733,6 @@ function scrollToElement(elementId, smooth = true) {
         const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
         const offsetPosition = elementPosition - navbarHeight - 20;
 
-        // Use requestAnimationFrame for smoother scrolling
         const scrollToPosition = (position, behavior = 'smooth') => {
             window.scrollTo({
                 top: position,
@@ -785,23 +746,20 @@ function scrollToElement(elementId, smooth = true) {
             scrollToPosition(offsetPosition, 'auto');
         }
 
-        // Highlight animation with better timing
         setTimeout(() => {
             if (elementId.startsWith('section-')) {
                 element.classList.add('section-highlight');
-                setTimeout(() => element.classList.remove('section-highlight'), 3000); // Increased from 2000ms to 3000ms
+                setTimeout(() => element.classList.remove('section-highlight'), 3000);
             } else if (elementId.startsWith('item-')) {
                 element.classList.add('card-highlight');
-                setTimeout(() => element.classList.remove('card-highlight'), 3000); // Increased from 2000ms to 3000ms
+                setTimeout(() => element.classList.remove('card-highlight'), 3000);
             }
-        }, smooth ? 800 : 100); // Increased from 500ms to 800ms for smooth scroll
+        }, smooth ? 800 : 100);
     }, 50);
 }
 
-
 // Home page specific functionality
 function initializeHomePage() {
-    // Set topic colors based on current theme
     function updateTopicColors() {
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
         document.querySelectorAll('.topic-card').forEach(card => {
@@ -813,10 +771,8 @@ function initializeHomePage() {
         });
     }
 
-    // Initial update
     updateTopicColors();
 
-    // Update when theme changes
     const themeToggle = document.getElementById('themeToggle');
     if (themeToggle) {
         themeToggle.addEventListener('click', function() {
@@ -827,10 +783,9 @@ function initializeHomePage() {
 
 // Cheatsheet page specific functionality
 function initializeCheatsheetPage() {
-	// Handle hash navigation on cheatsheet pages
-	if (window.location.hash && !suppressAutoHashScroll) {
-		setTimeout(() => {
-			scrollToElement(window.location.hash.substring(1));
-		}, 300);
-	}
+    if (window.location.hash && !suppressAutoHashScroll) {
+        setTimeout(() => {
+            scrollToElement(window.location.hash.substring(1));
+        }, 300);
+    }
 }

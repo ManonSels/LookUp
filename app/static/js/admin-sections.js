@@ -8,7 +8,7 @@ function initializeSectionsManagement() {
         return;
     }
 
-    // Section drag & drop - PREVENT nesting
+    // Section drag & drop
     const sectionsList = document.getElementById('sections-list');
     if (sectionsList) {
         const sectionSortable = Sortable.create(sectionsList, {
@@ -16,11 +16,9 @@ function initializeSectionsManagement() {
             animation: 150,
             ghostClass: 'sortable-ghost',
             chosenClass: 'sortable-chosen',
-            // CRITICAL: Prevent sections from being dropped into other sections
             filter: '.items-list, .items-grid, .item-card',
             preventOnFilter: false,
             onEnd: function(evt) {
-                // If item was dropped into a section (not between sections), revert
                 if (evt.to !== sectionsList) {
                     sectionSortable.sort(Array.from(sectionsList.children).map(child => child.getAttribute('data-section-id')));
                     return;
@@ -54,16 +52,15 @@ function initializeSectionsManagement() {
         });
     }
 
-    // Item drag & drop for each section - FIXED for grid layout
+    // Item drag & drop for each section
     document.querySelectorAll('[id^="items-list-"]').forEach(itemsList => {
         const sectionId = itemsList.id.replace('items-list-', '');
         
-        // Find the items-grid inside this section
         const itemsGrid = itemsList.querySelector('.items-grid');
         if (!itemsGrid) return;
         
         const itemSortable = Sortable.create(itemsGrid, {
-            group: 'items', // Allow dragging between all sections
+            group: 'items',
             handle: '.item-handle .handle-icon',
             animation: 150,
             ghostClass: 'sortable-ghost',
@@ -79,27 +76,20 @@ function initializeSectionsManagement() {
                 const toSectionId = toContainer.id.replace('items-list-', '');
                 const itemId = evt.item.getAttribute('data-item-id');
                 
-                console.log('Item moved:', {fromSectionId, toSectionId, itemId});
-                
-                // If item moved to a different section, update its section_id
                 if (fromSectionId !== toSectionId) {
                     updateItemSection(itemId, toSectionId, fromSectionId);
                 } else {
-                    // Same section, just update order
                     updateItemOrderInSection(toSectionId);
                 }
                 
-                // Update empty state visibility for both sections
                 updateEmptyState(fromSectionId);
                 updateEmptyState(toSectionId);
             }
         });
         
-        // Initialize empty state
         updateEmptyState(sectionId);
     });
 
-    // Function to update empty state visibility
     function updateEmptyState(sectionId) {
         const itemsList = document.getElementById(`items-list-${sectionId}`);
         if (!itemsList) return;
@@ -111,11 +101,9 @@ function initializeSectionsManagement() {
         const emptyState = itemsList.querySelector('.empty-items');
         
         if (itemCards.length === 0) {
-            // Show empty state
             if (emptyState) {
                 emptyState.style.display = 'flex';
             } else {
-                // Create empty state if it doesn't exist
                 const newEmptyState = document.createElement('div');
                 newEmptyState.className = 'empty-items';
                 newEmptyState.setAttribute('data-no-drag', '');
@@ -123,7 +111,6 @@ function initializeSectionsManagement() {
                 itemsList.appendChild(newEmptyState);
             }
         } else {
-            // Hide empty state
             if (emptyState) {
                 emptyState.style.display = 'none';
             }
@@ -146,7 +133,6 @@ function initializeSectionsManagement() {
             if (!data.success) {
                 alert('Error moving item: ' + (data.error || 'Unknown error'));
             } else {
-                // Update order in the new section
                 updateItemOrderInSection(newSectionId);
             }
         })

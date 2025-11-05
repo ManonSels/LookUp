@@ -1,7 +1,6 @@
 from .database import db_connection
 
 class TopicCategoryModel:
-    # ----- GET CATEGORIES FOR TOPIC ----- #
     @db_connection
     def get_categories_for_topic(self, cursor, topic_id):
         cursor.execute('''
@@ -15,8 +14,7 @@ class TopicCategoryModel:
         from app.models.category import CategoryModel
         category_model = CategoryModel()
         return [category_model._dict_to_category(cat) for cat in categories_data]
-    
-    # ----- GET TOPICS FOR CATEGORY ----- #
+
     @db_connection
     def get_topics_for_category(self, cursor, category_id):
         cursor.execute('''
@@ -30,8 +28,7 @@ class TopicCategoryModel:
         from app.models.topic import TopicModel
         topic_model = TopicModel()
         return [topic_model._dict_to_topic(topic) for topic in topics_data]
-    
-    # ----- ADD TOPIC TO CATEGORY ----- #
+
     @db_connection
     def add_topic_to_category(self, cursor, topic_id, category_id, display_order=None):
         if display_order is None:
@@ -48,8 +45,7 @@ class TopicCategoryModel:
         except Exception as e:
             print(f"Error adding topic to category: {e}")
             return False
-    
-    # ----- REMOVE TOPIC FROM CATEGORY ----- #
+
     @db_connection
     def remove_topic_from_category(self, cursor, topic_id, category_id):
         cursor.execute(
@@ -57,14 +53,11 @@ class TopicCategoryModel:
             (topic_id, category_id)
         )
         return True
-    
-    # ----- SET TOPIC CATEGORIES ----- #
+
     @db_connection
     def set_topic_categories(self, cursor, topic_id, category_ids):
-        # Remove existing categories
         cursor.execute('DELETE FROM topic_category WHERE topic_id = ?', (topic_id,))
         
-        # Add new categories with proper display order
         for display_order, category_id in enumerate(category_ids):
             cursor.execute(
                 'INSERT INTO topic_category (topic_id, category_id, display_order) VALUES (?, ?, ?)',
@@ -72,7 +65,6 @@ class TopicCategoryModel:
             )
         return True
     
-    # ----- UPDATE TOPIC CATEGORY ORDER ----- #
     @db_connection
     def update_topic_category_order(self, cursor, topic_id, category_id, display_order):
         cursor.execute(
@@ -81,7 +73,6 @@ class TopicCategoryModel:
         )
         return True
     
-    # ----- GET ALL TOPIC CATEGORIES ----- #
     @db_connection
     def get_all_topic_categories(self, cursor):
         cursor.execute('''
@@ -95,7 +86,6 @@ class TopicCategoryModel:
         ''')
         return cursor.fetchall()
     
-    # ----- CHECK IF TOPIC IN CATEGORY ----- #
     @db_connection
     def is_topic_in_category(self, cursor, topic_id, category_id):
         cursor.execute(

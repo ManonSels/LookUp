@@ -5,7 +5,6 @@ from urllib.parse import urlparse as url_parse
 
 auth_bp = Blueprint('auth', __name__)
 
-# ----- LOGIN ROUTE ----- #
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
@@ -29,14 +28,9 @@ def login():
     
     return render_template('login.html')
 
-# ----- LOGOUT ROUTE ----- #
 @auth_bp.route('/logout')
 @login_required
 def logout():
     logout_user()
     flash('You have been logged out.', 'success')
     return redirect(url_for('home.index'))
-
-
-
-

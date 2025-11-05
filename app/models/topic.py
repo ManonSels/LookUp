@@ -2,7 +2,6 @@ from .database import db_connection
 from flask import current_app
 
 class TopicModel:
-    # ----- ALL PUBLISHED ----- #
     @db_connection
     def get_all_published(self, cursor):
         try:
@@ -19,7 +18,6 @@ class TopicModel:
             current_app.logger.error(f"Error getting published topics: {e}")
             return []
     
-    # ----- BY SLUG ----- #
     @db_connection
     def get_by_slug(self, cursor, slug):
         try:
@@ -33,14 +31,10 @@ class TopicModel:
             if not topic_data:
                 return None
             
-            # Increment view count
-            cursor.execute('''
-                UPDATE topic SET view_count = view_count + 1 WHERE id = ?
-            ''', (topic_data['id'],))
+            cursor.execute('UPDATE topic SET view_count = view_count + 1 WHERE id = ?', (topic_data['id'],))
             
             topic = self._dict_to_topic(topic_data)
             
-            # Load categories for this topic
             from app.models.topic_category import TopicCategoryModel
             topic_category_model = TopicCategoryModel()
             topic.categories = topic_category_model.get_categories_for_topic(topic.id)
@@ -50,19 +44,15 @@ class TopicModel:
             current_app.logger.error(f"Error getting topic by slug {slug}: {e}")
             return None
     
-    # ----- INCREMENT VIEW COUNT ----- #
     @db_connection
     def increment_view_count(self, cursor, topic_id):
         try:
-            cursor.execute('''
-                UPDATE topic SET view_count = view_count + 1 WHERE id = ?
-            ''', (topic_id,))
+            cursor.execute('UPDATE topic SET view_count = view_count + 1 WHERE id = ?', (topic_id,))
             return True
         except Exception as e:
             current_app.logger.error(f"Error incrementing view count for topic {topic_id}: {e}")
             return False
     
-    # ----- GET MOST VIEWED ----- #
     @db_connection
     def get_most_viewed(self, cursor, limit=4):
         try:
@@ -80,7 +70,6 @@ class TopicModel:
             current_app.logger.error(f"Error getting most viewed topics: {e}")
             return []
     
-    # ----- ALL ----- #
     @db_connection
     def get_all(self, cursor):
         try:
@@ -96,7 +85,6 @@ class TopicModel:
             current_app.logger.error(f"Error getting all topics: {e}")
             return []
 
-    # ----- ALL GROUPED BY CATEGORY ----- #
     @db_connection
     def get_all_grouped_by_category(self, cursor):
         try:
@@ -129,15 +117,10 @@ class TopicModel:
             current_app.logger.error(f"Error getting topics grouped by category: {e}")
             return {}
     
-    # ----- BY ID ----- #
     @db_connection
     def get_by_id(self, cursor, topic_id):
         try:
-            cursor.execute('''
-                SELECT t.*
-                FROM topic t
-                WHERE t.id = ?
-            ''', (topic_id,))
+            cursor.execute('SELECT t.* FROM topic t WHERE t.id = ?', (topic_id,))
             topic_data = cursor.fetchone()
             
             if not topic_data:
@@ -145,7 +128,6 @@ class TopicModel:
             
             topic = self._dict_to_topic(topic_data)
             
-            # Load categories for this topic
             from app.models.topic_category import TopicCategoryModel
             topic_category_model = TopicCategoryModel()
             topic.categories = topic_category_model.get_categories_for_topic(topic.id)
@@ -156,7 +138,6 @@ class TopicModel:
             current_app.logger.error(f"Error getting topic by ID {topic_id}: {e}")
             return None
     
-    # ----- BY CATEGORY ----- #
     @db_connection
     def get_by_category(self, cursor, category_id):
         try:
@@ -167,11 +148,9 @@ class TopicModel:
             current_app.logger.error(f"Error getting topics by category {category_id}: {e}")
             return []
     
-    # ----- CREATE TOPIC ----- #
     @db_connection
     def create_topic(self, cursor, slug, title, description, user_id, category_ids, is_published=False, card_color_light='#ffffff', card_color_dark='#1a1a1a', logo_filename_light=None, logo_filename_dark=None):
         try:
-            # Validate inputs
             if not slug or not title:
                 raise ValueError("Slug and title are required")
             
@@ -181,14 +160,12 @@ class TopicModel:
             if not category_ids:
                 raise ValueError("At least one category is required")
             
-            # Create the topic
             cursor.execute(
                 'INSERT INTO topic (slug, title, description, user_id, is_published, card_color_light, card_color_dark, logo_filename_light, logo_filename_dark) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
                 (slug, title, description, user_id, 1 if is_published else 0, card_color_light, card_color_dark, logo_filename_light, logo_filename_dark)
             )
             topic_id = cursor.lastrowid
             
-            # Add to categories
             from app.models.topic_category import TopicCategoryModel
             topic_category_model = TopicCategoryModel()
             topic_category_model.set_topic_categories(topic_id, category_ids)
@@ -198,11 +175,9 @@ class TopicModel:
             current_app.logger.error(f"Error creating topic: {e}")
             return None
 
-    # ----- UPDATE TOPIC ----- #
     @db_connection
     def update_topic(self, cursor, topic_id, slug, title, description, category_ids, is_published, card_color_light='#ffffff', card_color_dark='#1a1a1a', logo_filename_light=None, logo_filename_dark=None):
         try:
-            # Validate inputs
             if not slug or not title:
                 raise ValueError("Slug and title are required")
             
@@ -212,13 +187,11 @@ class TopicModel:
             if not category_ids:
                 raise ValueError("At least one category is required")
             
-            # Update the topic
             cursor.execute(
                 'UPDATE topic SET slug = ?, title = ?, description = ?, is_published = ?, card_color_light = ?, card_color_dark = ?, logo_filename_light = ?, logo_filename_dark = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
                 (slug, title, description, 1 if is_published else 0, card_color_light, card_color_dark, logo_filename_light, logo_filename_dark, topic_id)
             )
             
-            # Update categories
             from app.models.topic_category import TopicCategoryModel
             topic_category_model = TopicCategoryModel()
             topic_category_model.set_topic_categories(topic_id, category_ids)
@@ -228,31 +201,24 @@ class TopicModel:
             current_app.logger.error(f"Error updating topic {topic_id}: {e}")
             return False
     
-    # ----- DELETE TOPIC ----- #
     @db_connection
     def delete_topic(self, cursor, topic_id):
         try:
-            # Topic_category records will be automatically deleted due to CASCADE
             cursor.execute('DELETE FROM topic WHERE id = ?', (topic_id,))
             return True
         except Exception as e:
             current_app.logger.error(f"Error deleting topic {topic_id}: {e}")
             return False
         
-    # ----- REFRESH TOPIC TIMESTAMP ----- #
     @db_connection
     def refresh_updated_at(self, cursor, topic_id):
         try:
-            cursor.execute(
-                'UPDATE topic SET updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-                (topic_id,)
-            )
+            cursor.execute('UPDATE topic SET updated_at = CURRENT_TIMESTAMP WHERE id = ?', (topic_id,))
             return True
         except Exception as e:
             current_app.logger.error(f"Error refreshing topic timestamp {topic_id}: {e}")
             return False
     
-    # ----- ALL CATEGORIES ----- #
     @db_connection
     def get_all_categories(self, cursor):
         try:
@@ -263,7 +229,6 @@ class TopicModel:
             current_app.logger.error(f"Error getting all categories: {e}")
             return []
     
-    # ----- GET CATEGORIES FOR TOPIC ----- #
     @db_connection
     def get_categories_for_topic(self, cursor, topic_id):
         try:
@@ -274,7 +239,6 @@ class TopicModel:
             current_app.logger.error(f"Error getting categories for topic {topic_id}: {e}")
             return []
     
-    # ----- CONVERT DB ROW TO TOPIC ----- #
     def _dict_to_topic(self, topic_data):
         if not isinstance(topic_data, dict):
             topic_data = dict(topic_data)
@@ -294,7 +258,6 @@ class TopicModel:
         topic.created_at = topic_data['created_at']
         topic.updated_at = topic_data['updated_at']
         
-        # Initialize categories as empty list (will be populated when needed)
         topic.categories = []
         topic.category_ids = []
         

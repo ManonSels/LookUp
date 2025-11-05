@@ -7,11 +7,9 @@ function initializeCategoriesDragDrop() {
             handle: '.handle',
             animation: 150,
             onEnd: function(evt) {
-                // Get new order
                 const categoryIds = Array.from(categoriesList.querySelectorAll('.category-card'))
                     .map(card => card.getAttribute('data-category-id'));
                 
-                // Update order in db
                 fetch("/admin/api/categories/reorder", {
                     method: 'POST',
                     headers: {
@@ -24,7 +22,6 @@ function initializeCategoriesDragDrop() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Update display numbers
                         updateDisplayOrders();
                     } else {
                         alert('Error updating category order');

@@ -1,12 +1,10 @@
 import os
-from flask import current_app
-from .database import db_connection, get_db, close_db
+from .database import db_connection
 
 class Schema:
     @db_connection
     def create_tables(self, cursor):
         try:
-            # ------------- USERS TABLE ------------- #
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS user (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -18,7 +16,6 @@ class Schema:
                 )
             ''')
 
-            # ------------- CATEGORY TABLE ------------- #
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS category (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,7 +25,6 @@ class Schema:
                 )
             ''')
             
-            # ------------- TOPICS TABLE (UPDATED - NO CATEGORY_ID) ------------- #
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS topic (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,7 +45,6 @@ class Schema:
                 )
             ''')
             
-            # ------------- TOPIC_CATEGORY JUNCTION TABLE ------------- #
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS topic_category (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -63,7 +58,6 @@ class Schema:
                 )
             ''')
             
-            # ------------- SECTIONS TABLE ------------- #
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS section (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -74,7 +68,6 @@ class Schema:
                 )
             ''')
             
-            # ------------- SECTIONS ITEMS TABLE ------------- #
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS section_item (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -100,14 +93,12 @@ class Schema:
     def migrate_existing_data(self, cursor):
         """Migrate existing topic.category_id to topic_category table"""
         try:
-            # Check if topic table has category_id column (old structure)
             cursor.execute("PRAGMA table_info(topic)")
             columns = [col['name'] for col in cursor.fetchall()]
             
             if 'category_id' in columns:
                 print("Migrating existing category relationships...")
                 
-                # Copy existing category relationships to topic_category table
                 cursor.execute('''
                     INSERT INTO topic_category (topic_id, category_id, display_order)
                     SELECT id, category_id, display_order FROM topic 
@@ -120,7 +111,6 @@ class Schema:
             print(f"Error migrating existing data: {e}")
             return False
     
-    # ----- CREATE ADMIN USER ----- #
     @db_connection
     def create_admin_user(self, cursor):
         try:
@@ -129,51 +119,33 @@ class Schema:
             admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
             admin_password = os.environ.get('ADMIN_PASSWORD', 'admin123')
             
-            print(f"DEBUG: Creating admin user - Username: '{admin_username}', Password: '{admin_password}'")
-            
-            # Check if user exists
             cursor.execute('SELECT id FROM user WHERE username = ?', (admin_username,))
             existing_user = cursor.fetchone()
             
             if existing_user:
-                print(f"DEBUG: User '{admin_username}' already exists with ID: {existing_user['id']}")
-                # Update the password to use the new hashing
                 password_hash = hash_password(admin_password)
                 cursor.execute(
                     'UPDATE user SET password_hash = ?, is_admin = 1 WHERE username = ?',
                     (password_hash, admin_username)
                 )
-                print(f"DEBUG: Updated password for existing user '{admin_username}'")
+                print(f"Updated password for existing user '{admin_username}'")
             else:
-                # Create new admin user
                 password_hash = hash_password(admin_password)
                 cursor.execute(
                     'INSERT INTO user (username, email, password_hash, is_admin) VALUES (?, ?, ?, ?)',
                     (admin_username, f'{admin_username}@example.com', password_hash, 1)
                 )
-                print(f"DEBUG: Created new admin user '{admin_username}'")
+                print(f"Created new admin user '{admin_username}'")
             
-            # Verify the user was created/updated
-            cursor.execute('SELECT id, username, password_hash FROM user WHERE username = ?', (admin_username,))
-            verified_user = cursor.fetchone()
-            if verified_user:
-                print(f"DEBUG: Verified - User ID: {verified_user['id']}, Username: {verified_user['username']}")
-                print(f"DEBUG: Password hash: {verified_user['password_hash'][:50]}...")
-            else:
-                print("DEBUG: ERROR - User verification failed!")
-                
             return True
         except Exception as e:
             print(f"ERROR creating admin user: {e}")
-            import traceback
-            traceback.print_exc()
             return False
     
-    # ----- INITIALIZE ENTIRE DB ----- #
     def init_db(self):
         try:
             if self.create_tables():
-                self.migrate_existing_data()  # Migrate existing data
+                self.migrate_existing_data()
                 self.create_admin_user()
                 print("Database initialized successfully!")
                 return True

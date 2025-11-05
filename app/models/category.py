@@ -1,23 +1,18 @@
 from .database import db_connection
 
 class CategoryModel:
-    # ------- ALL ------- #
     @db_connection
     def get_all(self, cursor):
         cursor.execute('SELECT * FROM category ORDER BY display_order, name')
         categories_data = cursor.fetchall()
         return [self._dict_to_category(category) for category in categories_data]
     
-    # ------- BY ID ------- #
     @db_connection
     def get_by_id(self, cursor, category_id):
         cursor.execute('SELECT * FROM category WHERE id = ?', (category_id,))
         category_data = cursor.fetchone()
-        if not category_data:
-            return None
-        return self._dict_to_category(category_data)
+        return self._dict_to_category(category_data) if category_data else None
     
-    # ------- CREATE ------- #
     @db_connection
     def create(self, cursor, name, display_order=None):
         try:
@@ -35,7 +30,6 @@ class CategoryModel:
             print(f"Error creating category: {e}")
             return None
     
-    # ------- UPDATE ------- #
     @db_connection
     def update(self, cursor, category_id, name, display_order):
         try:
@@ -52,7 +46,6 @@ class CategoryModel:
             print(f"Error updating category: {e}")
             return False
     
-    # ------- DELETE ------- #
     @db_connection
     def delete(self, cursor, category_id):
         try:
@@ -62,7 +55,6 @@ class CategoryModel:
             print(f"Error deleting category: {e}")
             return False
     
-    # ------- REORDER CATEGORIES ------- #
     @db_connection
     def reorder_categories(self, cursor, category_order):
         try:
@@ -79,7 +71,6 @@ class CategoryModel:
             print(f"Error reordering categories: {e}")
             return False
     
-    # ------- BY CATEGORY WITH TOPICS ------- #
     @db_connection
     def get_topics_by_category(self, cursor):
         cursor.execute('''
@@ -88,7 +79,7 @@ class CategoryModel:
             FROM category c
             LEFT JOIN topic t ON c.id = t.category_id AND t.is_published = 1
             GROUP BY c.id
-            ORDER BY c.display_order, c.name  # Ensure categories are ordered by display_order
+            ORDER BY c.display_order, c.name
         ''')
         categories_data = cursor.fetchall()
         
@@ -105,7 +96,7 @@ class CategoryModel:
                 cursor.execute(f'''
                     SELECT * FROM topic 
                     WHERE id IN ({placeholders}) 
-                    ORDER BY display_order, title  # Ensure topics are ordered by display_order
+                    ORDER BY display_order, title
                 ''', topic_ids)
                 
                 topics_data = cursor.fetchall()
@@ -122,10 +113,8 @@ class CategoryModel:
                 'id': category_id
             }
         
-        # Sort by display_order
         return dict(sorted(categorized_topics.items(), key=lambda x: x[1]['display_order']))
 
-    # ------- DISPLAY ORDER VALIDATION ------- #
     @db_connection
     def is_display_order_taken(self, cursor, display_order, exclude_category_id=None):
         query = 'SELECT id FROM category WHERE display_order = ?'
@@ -138,14 +127,12 @@ class CategoryModel:
         cursor.execute(query, params)
         return cursor.fetchone() is not None
 
-    # ------- NEXT AVAILABLE DISPLAY ORDER ------- #
     @db_connection
     def get_next_available_display_order(self, cursor):
         cursor.execute('SELECT MAX(display_order) FROM category')
         result = cursor.fetchone()
         return (result[0] or -1) + 1
 
-    # ------- CONVERT DB ROW TO CATEGORY OBJECT ------- #
     def _dict_to_category(self, category_data):
         category = CategoryModel()
         category.id = category_data['id']

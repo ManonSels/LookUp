@@ -51,7 +51,7 @@
             </select>
             <small>Choose how this card should appear in the layout.</small>
             
-            <!-- Visual size picker (keep your existing one) -->
+            <!-- Visual size picker -->
             <div class="size-preview" style="margin-top: 1rem;">
                 <div class="size-options" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; max-width: 200px;">
                     <div class="size-option small" data-size="small" style="height: 20px; background: var(--border-color); border-radius: 3px; cursor: pointer;"></div>
@@ -103,18 +103,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const color = this.getAttribute('data-color');
             bookmarkColorInput.value = color;
             
-            // Update visual selection
             colorSwatches.forEach(s => s.style.borderColor = 'transparent');
             this.style.borderColor = 'var(--text-primary)';
         });
     });
     
-    // Size picker functionality (your existing code)
+    // Size picker functionality
     const sizeSelect = document.getElementById('card_size');
     const sizeOptions = document.querySelectorAll('.size-option');
     
     if (sizeSelect && sizeOptions.length > 0) {
-        // Update visual when select changes
         sizeSelect.addEventListener('change', function() {
             sizeOptions.forEach(opt => opt.style.background = 'var(--border-color)');
             const activeOpt = document.querySelector(`.size-option[data-size="${this.value}"]`);
@@ -123,7 +121,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Update select when visual is clicked
         sizeOptions.forEach(option => {
             option.addEventListener('click', function() {
                 const size = this.getAttribute('data-size');
@@ -133,7 +130,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
         
-        // Set initial visual state
         if (sizeSelect.value) {
             const activeOpt = document.querySelector(`.size-option[data-size="${sizeSelect.value}"]`);
             if (activeOpt) {

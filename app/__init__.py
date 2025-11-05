@@ -15,7 +15,6 @@ def create_app():
     app.config['CACHE_TYPE'] = 'SimpleCache'
     app.config['CACHE_DEFAULT_TIMEOUT'] = 300
     
-    # Ensure instance folder exists
     try:
         os.makedirs(app.instance_path, exist_ok=True)
     except OSError:
@@ -35,7 +34,6 @@ def create_app():
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(search_bp)
     
-    # Register teardown context
     from app.models.database import close_db
     app.teardown_appcontext(close_db)
     
@@ -44,22 +42,20 @@ def create_app():
         if not text:
             return ""
         
-        # Pre-process checkbox syntax [ ] and [x]
         if text:
             text = text.replace('[ ]', '<input type="checkbox" disabled>')
             text = text.replace('[x]', '<input type="checkbox" checked disabled>')
             text = text.replace('[X]', '<input type="checkbox" checked disabled>')
         
-        # Use markdown with proper extensions
         html = markdown.markdown(
             text, 
             extensions=[
-                'fenced_code',    # Code blocks
-                'tables',         # Tables
-                'toc',           # Table of contents
-                'extra',         # Adds many features
-                'nl2br',         # Convert newlines to <br>
-                'sane_lists',    # Better list handling
+                'fenced_code',
+                'tables',
+                'toc',
+                'extra',
+                'nl2br',
+                'sane_lists',
             ]
         )
         
@@ -70,10 +66,8 @@ def create_app():
         if not value:
             return ""
         
-        # If it's a string, try to parse it
         if isinstance(value, str):
             try:
-                # Handle SQLite datetime format
                 if ' ' in value:
                     value = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
                 else:
@@ -81,7 +75,6 @@ def create_app():
             except:
                 return value
         
-        # Format as "MMM DD" (e.g., "Jan 15")
         if isinstance(value, datetime):
             return value.strftime('%b %d')
         

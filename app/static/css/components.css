@@ -1,7 +1,3 @@
-/* ------------------------------------------- */
-/* ----------------- BUTTONS ----------------- */
-/* ------------------------------------------- */
-
 .btn {
     display: inline-block;
     padding: 0.5rem 1rem;
@@ -11,7 +7,7 @@
     font-weight: 500;
     font-size: 0.875rem;
     cursor: pointer;
-    transition: all 0.4s ease; /* Increased from 0.2s to 0.4s */
+    transition: all 0.4s ease;
     text-align: center;
 }
 
@@ -61,7 +57,7 @@
     font-size: 1.2rem;
     cursor: pointer;
     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    transition: all 0.5s ease; /* Increased from 0.3s to 0.5s */
+    transition: all 0.5s ease;
     z-index: 1000;
 }
 
@@ -71,8 +67,6 @@
     background: var(--accent-hover);
 }
 
-/* Copy Button for Code Blocks */
-/* Copy Button for Code Blocks */
 .copy-btn {
     position: absolute;
     top: 0.5rem;
@@ -85,7 +79,7 @@
     font-size: 0.75rem;
     cursor: pointer;
     opacity: 0;
-    transition: all 0.4s ease; /* Increased from 0.2s to 0.4s */
+    transition: all 0.4s ease;
     z-index: 10;
 }
 
@@ -98,11 +92,6 @@ pre:hover .copy-btn {
     color: white;
     border-color: var(--accent-color);
 }
-
-
-/* ------------------------------------------- */
-/* ------------ CATEGORY FILTERS ------------- */
-/* ------------------------------------------- */
 
 .category-filters {
     display: flex;
@@ -136,7 +125,6 @@ pre:hover .copy-btn {
     border-color: var(--accent-color);
 }
 
-/* Responsive design */
 @media (max-width: 768px) {
     .category-filters {
         gap: 0.4rem;
@@ -148,11 +136,6 @@ pre:hover .copy-btn {
     }
 }
 
-/* ------------------------------------------- */
-/* --------------- DRAG HANDLES -------------- */
-/* ------------------------------------------- */
-
-/* Ensure drag handles are visible and clickable */
 .section-handle .handle-icon,
 .item-handle .handle-icon {
     cursor: grab;
@@ -175,9 +158,8 @@ pre:hover .copy-btn {
     cursor: grabbing;
 }
 
-/* Make sure item cards are properly draggable */
 .item-card {
-    cursor: default; /* Reset cursor */
+    cursor: default;
 }
 
 .item-card .item-handle {
@@ -187,10 +169,6 @@ pre:hover .copy-btn {
 .item-card .item-handle:active {
     cursor: grabbing;
 }
-
-/* ------------------------------------------- */
-/* ------------------ FORMS ------------------ */
-/* ------------------------------------------- */
 
 .login-container {
     display: flex;
@@ -301,7 +279,6 @@ pre:hover .copy-btn {
     margin-top: 2rem;
 }
 
-/* ----- FORM LINKS - BETTER VISIBILITY ----- */
 .form-group small a {
     color: var(--accent-color);
     text-decoration: none;
@@ -322,7 +299,6 @@ pre:hover .copy-btn {
     color: #90cdf4;
 }
 
-/* ----- COLOR PICKER STYLES ----- */
 .color-picker-group {
     display: flex;
     align-items: center;
@@ -371,7 +347,6 @@ pre:hover .copy-btn {
     background: var(--bg-secondary);
 }
 
-/* ----- PUBLISH/DRAFT TOGGLE BUTTON ----- */
 .publish-toggle {
     display: flex;
     align-items: center;
@@ -417,16 +392,12 @@ pre:hover .copy-btn {
     display: none;
 }
 
-/* ------------------------------------------- */
-/* ---------------- CARDS -------------------- */
-/* ------------------------------------------- */
-
 .card {
     background: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 1.5rem;
-    transition: all 0.4s ease; /* Increased from 0.2s to 0.4s */
+    transition: all 0.4s ease;
     scroll-margin-top: 80px;
     position: relative;
     break-inside: avoid;
@@ -439,7 +410,7 @@ pre:hover .copy-btn {
 }
 
 .card:target {
-    animation: card-pulse 3s ease-in-out; /* Increased from 2s to 3s */
+    animation: card-pulse 3s ease-in-out;
 }
 
 @keyframes card-pulse {
@@ -469,8 +440,6 @@ pre:hover .copy-btn {
 .card-link:hover {
     text-decoration: underline;
 }
-
-/* ------- IMAGE SCALING ------- */
 
 .card-content img {
     max-width: 100%;
@@ -511,12 +480,6 @@ pre:hover .copy-btn {
     transform: scale(1.02);
     transition: transform 0.2s ease;
 }
-
-
-
-/* ------------------------------------------- */
-/* -------------- ALERTS & STATES ------------ */
-/* ------------------------------------------- */
 
 .alert {
     padding: 1rem;

@@ -3,43 +3,31 @@ from .database import db_connection, verify_password
 from flask import current_app
 
 class UserModel(UserMixin):
-    # ----- BY ID ----- #
     @db_connection
     def get_by_id(self, cursor, user_id):
         try:
             cursor.execute('SELECT * FROM user WHERE id = ?', (user_id,))
             user_data = cursor.fetchone()
-            
-            if not user_data:
-                return None
-            
-            return self._dict_to_user(user_data)
+            return self._dict_to_user(user_data) if user_data else None
         except Exception as e:
             current_app.logger.error(f"Error getting user by ID {user_id}: {e}")
             return None
     
-    # ----- BY USERNAME ----- #
     @db_connection
     def get_by_username(self, cursor, username):
         try:
             cursor.execute('SELECT * FROM user WHERE username = ?', (username,))
             user_data = cursor.fetchone()
-            
-            if not user_data:
-                return None
-            
-            return self._dict_to_user(user_data)
+            return self._dict_to_user(user_data) if user_data else None
         except Exception as e:
             current_app.logger.error(f"Error getting user by username {username}: {e}")
             return None
     
-    # ----- CREATE USER ----- #
     @db_connection
     def create_user(self, cursor, username, email, password, is_admin=False):
         try:
             from .database import hash_password
             
-            # Validate inputs
             if not username or not email or not password:
                 raise ValueError("Username, email, and password are required")
             
@@ -57,7 +45,6 @@ class UserModel(UserMixin):
             current_app.logger.error(f"Error creating user: {e}")
             return None
     
-    # ----- ALL USERS ----- #
     @db_connection
     def get_all_users(self, cursor):
         try:
@@ -68,7 +55,6 @@ class UserModel(UserMixin):
             current_app.logger.error(f"Error getting all users: {e}")
             return []
     
-    # ----- CHECK PASSWORD ----- #
     def check_password(self, password):
         try:
             return verify_password(password, self.password_hash)
@@ -76,9 +62,6 @@ class UserModel(UserMixin):
             current_app.logger.error(f"Error checking password: {e}")
             return False
         
-        
-    
-    # ----- CONVERT DB ROW TO USER OBJECT ----- #
     def _dict_to_user(self, user_data):
         user = UserModel()
         user.id = user_data['id']
