@@ -28,14 +28,13 @@ class Schema:
                 )
             ''')
             
-            # ------------- TOPICS TABLE ------------- #
+            # ------------- TOPICS TABLE (UPDATED - NO CATEGORY_ID) ------------- #
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS topic (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     slug TEXT UNIQUE NOT NULL,
                     title TEXT NOT NULL,
                     description TEXT,
-                    category_id INTEGER NOT NULL,
                     display_order INTEGER DEFAULT 0,
                     is_published BOOLEAN DEFAULT 0,
                     user_id INTEGER NOT NULL,
@@ -46,8 +45,21 @@ class Schema:
                     view_count INTEGER DEFAULT 0,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (user_id) REFERENCES user (id),
-                    FOREIGN KEY (category_id) REFERENCES category (id)
+                    FOREIGN KEY (user_id) REFERENCES user (id)
+                )
+            ''')
+            
+            # ------------- TOPIC_CATEGORY JUNCTION TABLE ------------- #
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS topic_category (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    topic_id INTEGER NOT NULL,
+                    category_id INTEGER NOT NULL,
+                    display_order INTEGER DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (topic_id) REFERENCES topic (id) ON DELETE CASCADE,
+                    FOREIGN KEY (category_id) REFERENCES category (id) ON DELETE CASCADE,
+                    UNIQUE(topic_id, category_id)
                 )
             ''')
             
@@ -82,6 +94,30 @@ class Schema:
             return True
         except Exception as e:
             print(f"Error creating tables: {e}")
+            return False
+    
+    @db_connection
+    def migrate_existing_data(self, cursor):
+        """Migrate existing topic.category_id to topic_category table"""
+        try:
+            # Check if topic table has category_id column (old structure)
+            cursor.execute("PRAGMA table_info(topic)")
+            columns = [col['name'] for col in cursor.fetchall()]
+            
+            if 'category_id' in columns:
+                print("Migrating existing category relationships...")
+                
+                # Copy existing category relationships to topic_category table
+                cursor.execute('''
+                    INSERT INTO topic_category (topic_id, category_id, display_order)
+                    SELECT id, category_id, display_order FROM topic 
+                    WHERE category_id IS NOT NULL
+                ''')
+                
+                print("Existing data migrated successfully!")
+            return True
+        except Exception as e:
+            print(f"Error migrating existing data: {e}")
             return False
     
     # ----- CREATE ADMIN USER ----- #
@@ -137,6 +173,7 @@ class Schema:
     def init_db(self):
         try:
             if self.create_tables():
+                self.migrate_existing_data()  # Migrate existing data
                 self.create_admin_user()
                 print("Database initialized successfully!")
                 return True

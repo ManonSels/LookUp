@@ -15,19 +15,25 @@
         <input type="text" id="title" name="title" value="{{ topic.title if topic }}" required>
     </div>
     
+    <!-- MULTIPLE CATEGORIES SELECTION -->
     <div class="form-group">
-        <label for="category_id">Category:</label>
-        <select id="category_id" name="category_id" required>
+        <label for="category_ids">Categories:</label>
+        <div id="category-selection" class="category-selection-grid">
             {% for cat_id, cat_name in categories %}
-            <option value="{{ cat_id }}" 
-                    {{ 'selected' if topic and topic.category_id == cat_id else '' }}>
-                {{ cat_name }}
-            </option>
+            <div class="category-option" data-category-id="{{ cat_id }}">
+                <input type="checkbox" name="category_ids" value="{{ cat_id }}" 
+                       {% if topic %}
+                           {{ 'checked' if cat_id in topic.category_ids else '' }}
+                       {% endif %}
+                       class="category-checkbox" id="category-{{ cat_id }}">
+                <label for="category-{{ cat_id }}" class="category-label">
+                    <span class="category-name">{{ cat_name }}</span>
+                    <span class="checkmark">✓</span>
+                </label>
+            </div>
             {% endfor %}
-        </select>
-        <small>
-            <a href="{{ url_for('admin.manage_categories') }}">Manage categories</a> to add new ones
-        </small>
+        </div>
+        <small>Select one or more categories for this topic</small>
     </div>
 
     <div class="form-group">
@@ -124,6 +130,82 @@
     </div>
 </form>
 
+<style>
+.category-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-secondary);
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.category-option {
+    position: relative;
+}
+
+.category-checkbox {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.category-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.category-label:hover {
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.category-checkbox:checked + .category-label {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 149, 246, 0.3);
+}
+
+.category-checkbox:checked + .category-label .checkmark {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.checkmark {
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.3s ease;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.category-name {
+    flex: 1;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .category-selection-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Update color previews
@@ -169,6 +251,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Show a success message
                 alert(`${theme.charAt(0).toUpperCase() + theme.slice(1)} theme logo will be removed when you save the topic.`);
+            }
+        });
+    });
+
+    // Category selection styling
+    const categoryOptions = document.querySelectorAll('.category-option');
+    categoryOptions.forEach(option => {
+        const checkbox = option.querySelector('.category-checkbox');
+        const label = option.querySelector('.category-label');
+        
+        // Set initial state
+        if (checkbox.checked) {
+            label.style.background = 'var(--accent-color)';
+            label.style.borderColor = 'var(--accent-color)';
+            label.style.color = 'white';
+        }
+        
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                label.style.background = 'var(--accent-color)';
+                label.style.borderColor = 'var(--accent-color)';
+                label.style.color = 'white';
+            } else {
+                label.style.background = 'var(--card-bg)';
+                label.style.borderColor = 'var(--border-color)';
+                label.style.color = 'var(--text-primary)';
             }
         });
     });

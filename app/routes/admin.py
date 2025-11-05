@@ -5,6 +5,7 @@ from app.models.topic import TopicModel
 from app.models.section import SectionModel
 from app.models.section_item import SectionItemModel
 from app.models.category import CategoryModel 
+from app.models.topic_category import TopicCategoryModel
 from werkzeug.utils import secure_filename
 from app.utils.upload import save_topic_logo, delete_topic_logo
 
@@ -148,7 +149,7 @@ def new_topic():
         slug = request.form.get('slug')
         title = request.form.get('title')
         description = request.form.get('description')
-        category_id = request.form.get('category_id', 1, type=int)
+        category_ids = request.form.getlist('category_ids')
         is_published = 'is_published' in request.form
         card_color_light = request.form.get('card_color_light', '#ffffff')
         card_color_dark = request.form.get('card_color_dark', '#1a1a1a')
@@ -175,7 +176,14 @@ def new_topic():
             flash('Slug and title are required', 'error')
             return render_template('admin/edit_topic.html', categories=categories)
         
-        topic_id = topic_model.create_topic(slug, title, description, current_user.id, category_id, is_published, card_color_light, card_color_dark, logo_filename_light, logo_filename_dark)
+        if not category_ids:
+            flash('At least one category is required', 'error')
+            return render_template('admin/edit_topic.html', categories=categories)
+        
+        # Convert category_ids to integers
+        category_ids = [int(cid) for cid in category_ids]
+        
+        topic_id = topic_model.create_topic(slug, title, description, current_user.id, category_ids, is_published, card_color_light, card_color_dark, logo_filename_light, logo_filename_dark)
         
         if topic_id:
             flash('Topic created successfully!', 'success')
@@ -201,7 +209,7 @@ def edit_topic(topic_id):
         slug = request.form.get('slug')
         title = request.form.get('title')
         description = request.form.get('description')
-        category_id = request.form.get('category_id', 1, type=int)
+        category_ids = request.form.getlist('category_ids')
         is_published = 'is_published' in request.form
         card_color_light = request.form.get('card_color_light', '#ffffff')
         card_color_dark = request.form.get('card_color_dark', '#1a1a1a')
@@ -242,7 +250,14 @@ def edit_topic(topic_id):
                 else:
                     flash('Error uploading dark theme logo', 'error')
         
-        if topic_model.update_topic(topic_id, slug, title, description, category_id, is_published, card_color_light, card_color_dark, logo_filename_light, logo_filename_dark):
+        if not category_ids:
+            flash('At least one category is required', 'error')
+            return render_template('admin/edit_topic.html', topic=topic, categories=categories)
+        
+        # Convert category_ids to integers
+        category_ids = [int(cid) for cid in category_ids]
+        
+        if topic_model.update_topic(topic_id, slug, title, description, category_ids, is_published, card_color_light, card_color_dark, logo_filename_light, logo_filename_dark):
             flash('Topic updated successfully!', 'success')
             return redirect(url_for('admin.dashboard'))
         else:
@@ -274,7 +289,7 @@ def api_reorder_topics():
             
             for display_order, topic_id in enumerate(order_data):
                 cursor.execute(
-                    'UPDATE topic SET display_order = ? WHERE id = ? AND category_id = ?',
+                    'UPDATE topic_category SET display_order = ? WHERE topic_id = ? AND category_id = ?',
                     (display_order, topic_id, category_id)
                 )
         return jsonify({'success': True})
@@ -291,11 +306,48 @@ def api_change_topic_category():
         with DBConnection() as cursor:
             topic_id = request.json.get('topic_id')
             category_id = request.json.get('category_id')
+            old_category_id = request.json.get('old_category_id')
+            action = request.json.get('action')  # 'add' or 'move'
             
-            cursor.execute(
-                'UPDATE topic SET category_id = ? WHERE id = ?',
-                (category_id, topic_id)
-            )
+            if action == 'add':
+                # Check if already exists
+                cursor.execute(
+                    'SELECT id FROM topic_category WHERE topic_id = ? AND category_id = ?',
+                    (topic_id, category_id)
+                )
+                if not cursor.fetchone():
+                    # Get next display order
+                    cursor.execute(
+                        'SELECT COALESCE(MAX(display_order), -1) FROM topic_category WHERE category_id = ?',
+                        (category_id,)
+                    )
+                    result = cursor.fetchone()
+                    display_order = (result[0] or -1) + 1
+                    
+                    cursor.execute(
+                        'INSERT INTO topic_category (topic_id, category_id, display_order) VALUES (?, ?, ?)',
+                        (topic_id, category_id, display_order)
+                    )
+            elif action == 'move':
+                # Remove from old category and add to new category
+                cursor.execute(
+                    'DELETE FROM topic_category WHERE topic_id = ? AND category_id = ?',
+                    (topic_id, old_category_id)
+                )
+                
+                # Get next display order in new category
+                cursor.execute(
+                    'SELECT COALESCE(MAX(display_order), -1) FROM topic_category WHERE category_id = ?',
+                    (category_id,)
+                )
+                result = cursor.fetchone()
+                display_order = (result[0] or -1) + 1
+                
+                cursor.execute(
+                    'INSERT INTO topic_category (topic_id, category_id, display_order) VALUES (?, ?, ?)',
+                    (topic_id, category_id, display_order)
+                )
+            
         return jsonify({'success': True})
     except Exception as e:
         print(f"Error changing topic category: {e}")
@@ -392,8 +444,8 @@ def api_reorder_sections():
 @admin_bp.route('/api/items/reorder', methods=['POST'])
 @admin_required
 def api_reorder_items():
-    section_id = request.json.get('section_id')
-    order_data = request.json.get('order', [])
+    section_id = request.form.get('section_id')
+    order_data = request.form.getlist('order[]')
     
     try:
         from app.models.database import DBConnection
@@ -446,7 +498,7 @@ def new_item(section_id):
         title = request.form.get('title')
         markdown_content = request.form.get('markdown_content', '')
         card_size = request.form.get('card_size', 'normal')
-        bookmark_color = request.form.get('bookmark_color', '#3b82f6')  # ADD THIS
+        bookmark_color = request.form.get('bookmark_color', '#3b82f6')
         
         if not title:
             flash('Title is required', 'error')
@@ -458,7 +510,7 @@ def new_item(section_id):
             section_id=section_id,
             markdown_content=markdown_content,
             card_size=card_size,
-            bookmark_color=bookmark_color  # ADD THIS
+            bookmark_color=bookmark_color
         )
         
         if item_id:
@@ -487,13 +539,13 @@ def edit_item(item_id):
         title = request.form.get('title')
         markdown_content = request.form.get('markdown_content', '')
         card_size = request.form.get('card_size', 'normal')
-        bookmark_color = request.form.get('bookmark_color', '#3b82f6')  # ADD THIS
+        bookmark_color = request.form.get('bookmark_color', '#3b82f6')
         
         if not title:
             flash('Title is required', 'error')
             return render_template('admin/edit_item.html', section=section, item=item)
         
-        if item_model.update_item(item_id, title, markdown_content, item.display_order, card_size, bookmark_color):  # UPDATE
+        if item_model.update_item(item_id, title, markdown_content, item.display_order, card_size, bookmark_color):
             flash('Item updated successfully!', 'success')
             return redirect(url_for('admin.manage_sections', topic_id=section.topic_id))
         else:

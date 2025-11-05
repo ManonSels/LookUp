@@ -48,7 +48,7 @@ function updateCategoryVisibility() {
     document.querySelectorAll('.category-column').forEach(column => {
         const categoryId = column.getAttribute('data-category-id');
         const topicList = column.querySelector('.topics-list');
-        // Only count visible topic cards
+        // Only count visible topic cards (for search filtering)
         const visibleTopics = topicList.querySelectorAll('.topic-card.admin[style*="display: flex"], .topic-card.admin:not([style*="display: none"])').length;
         
         // Hide empty categories when searching
@@ -85,8 +85,25 @@ function initializeDashboardDragDrop() {
         new Sortable(topicList, {
             group: {
                 name: 'topics',
-                pull: true,
-                put: true
+                pull: true, // Move the actual element (not clone)
+                put: function(to, from, dragEl) {
+                    // Check if topic already exists in target category
+                    const topicId = dragEl.getAttribute('data-topic-id');
+                    const targetCategoryId = to.el.id.replace('topics-list-', '');
+                    
+                    // Get all topics in target category
+                    const existingTopics = Array.from(to.el.querySelectorAll('.topic-card'))
+                        .map(card => card.getAttribute('data-topic-id'));
+                    
+                    // Prevent dropping if topic already exists in target category
+                    if (existingTopics.includes(topicId)) {
+                        console.log(`Topic ${topicId} already exists in category ${targetCategoryId}`);
+                        showFlashMessage('Topic already exists in this category!', 'error');
+                        return false;
+                    }
+                    
+                    return true;
+                }
             },
             handle: '.topic-handle .handle-icon',
             animation: 150,
@@ -109,7 +126,9 @@ function initializeDashboardDragDrop() {
                 const oldCategoryId = originalCategories.get(topicId);
                 
                 console.log(`Topic ${topicId} moved from category ${oldCategoryId} to ${newCategoryId}`);
-                updateTopicCategory(topicId, newCategoryId, oldCategoryId);
+                
+                // This is always a move between categories
+                updateTopicCategory(topicId, newCategoryId, oldCategoryId, 'move');
             },
             
             // When order changes within the same category
@@ -127,8 +146,8 @@ function initializeDashboardDragDrop() {
         });
     });
 
-    function updateTopicCategory(topicId, newCategoryId, oldCategoryId) {
-        console.log(`Updating topic ${topicId} to category ${newCategoryId}`);
+    function updateTopicCategory(topicId, newCategoryId, oldCategoryId, action) {
+        console.log(`Updating topic ${topicId} to category ${newCategoryId} with action: ${action}`);
         
         fetch("/admin/api/topics/change_category", {
             method: 'POST',
@@ -137,7 +156,9 @@ function initializeDashboardDragDrop() {
             },
             body: JSON.stringify({
                 topic_id: parseInt(topicId),
-                category_id: parseInt(newCategoryId)
+                category_id: parseInt(newCategoryId),
+                old_category_id: parseInt(oldCategoryId),
+                action: action
             })
         })
         .then(response => {
@@ -149,13 +170,16 @@ function initializeDashboardDragDrop() {
         .then(data => {
             if (data.success) {
                 console.log(`Successfully updated topic ${topicId} category`);
+                
+                // Update the topic card's data attribute
                 const topicCard = document.querySelector(`[data-topic-id="${topicId}"]`);
                 if (topicCard) {
                     topicCard.setAttribute('data-category-id', newCategoryId);
                 }
+                
                 updateCategoryCounts();
                 updateTopicOrderInCategory(newCategoryId);
-                showFlashMessage('Topic category updated successfully!', 'success');
+                showFlashMessage('Topic moved to new category!', 'success');
 
             } else {
                 throw new Error(data.error || 'Unknown error');
@@ -211,6 +235,9 @@ function initializeDashboardDragDrop() {
         const targetList = document.getElementById(`topics-list-${categoryId}`);
         
         if (topicCard && targetList) {
+            // Remove from current location
+            topicCard.remove();
+            // Add back to original location
             targetList.appendChild(topicCard);
             topicCard.setAttribute('data-category-id', categoryId);
             updateCategoryCounts();
