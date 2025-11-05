@@ -11,7 +11,7 @@
     font-weight: 500;
     font-size: 0.875rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.4s ease; /* Increased from 0.2s to 0.4s */
     text-align: center;
 }
 
@@ -46,6 +46,146 @@
 .btn-sm {
     padding: 0.375rem 0.75rem;
     font-size: 0.875rem;
+}
+
+.back-to-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    transition: all 0.5s ease; /* Increased from 0.3s to 0.5s */
+    z-index: 1000;
+}
+
+.back-to-top:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    background: var(--accent-hover);
+}
+
+/* Copy Button for Code Blocks */
+/* Copy Button for Code Blocks */
+.copy-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.4s ease; /* Increased from 0.2s to 0.4s */
+    z-index: 10;
+}
+
+pre:hover .copy-btn {
+    opacity: 1;
+}
+
+.copy-btn:hover {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+
+/* ------------------------------------------- */
+/* ------------ CATEGORY FILTERS ------------- */
+/* ------------------------------------------- */
+
+.category-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0 2rem 0;
+}
+
+.filter-btn {
+    padding: 0.4rem 0.8rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    outline: none;
+}
+
+.filter-btn:hover {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+.filter-btn.active {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .category-filters {
+        gap: 0.4rem;
+    }
+    
+    .filter-btn {
+        padding: 0.35rem 0.7rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* ------------------------------------------- */
+/* --------------- DRAG HANDLES -------------- */
+/* ------------------------------------------- */
+
+/* Ensure drag handles are visible and clickable */
+.section-handle .handle-icon,
+.item-handle .handle-icon {
+    cursor: grab;
+    color: var(--text-muted);
+    padding: 0.25rem;
+    margin-right: 0.5rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.section-handle .handle-icon:hover,
+.item-handle .handle-icon:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.section-handle .handle-icon:active,
+.item-handle .handle-icon:active {
+    cursor: grabbing;
+}
+
+/* Make sure item cards are properly draggable */
+.item-card {
+    cursor: default; /* Reset cursor */
+}
+
+.item-card .item-handle {
+    cursor: grab;
+}
+
+.item-card .item-handle:active {
+    cursor: grabbing;
 }
 
 /* ------------------------------------------- */
@@ -286,13 +426,25 @@
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 1.5rem;
-    transition: border-color 0.2s;
+    transition: all 0.4s ease; /* Increased from 0.2s to 0.4s */
     scroll-margin-top: 80px;
     position: relative;
+    break-inside: avoid;
 }
 
 .card:hover {
     border-color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card:target {
+    animation: card-pulse 3s ease-in-out; /* Increased from 2s to 3s */
+}
+
+@keyframes card-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
 }
 
 .card h3 {
@@ -327,6 +479,15 @@
     margin: 0.75rem auto;
     border-radius: 6px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: opacity 0.3s;
+}
+
+.card-content img:not(.loaded) {
+    opacity: 0;
+}
+
+.card-content img.loaded {
+    opacity: 1;
 }
 
 .card-small .card-content img {
@@ -350,6 +511,8 @@
     transform: scale(1.02);
     transition: transform 0.2s ease;
 }
+
+
 
 /* ------------------------------------------- */
 /* -------------- ALERTS & STATES ------------ */

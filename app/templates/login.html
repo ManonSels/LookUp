@@ -6,17 +6,114 @@
 <div class="login-container">
     <div class="login-form">
         <h2>Admin Login</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
         <form method="POST">
             <div class="form-group">
                 <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required>
+                <input type="text" id="username" name="username" required 
+                       placeholder="Enter your username">
             </div>
             <div class="form-group">
                 <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
+                <input type="password" id="password" name="password" required 
+                       placeholder="Enter your password">
             </div>
-            <button type="submit" class="btn btn-primary">Login</button>
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.875rem;">
+                Login
+            </button>
         </form>
+        
+        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+            <p style="text-align: center; color: var(--text-muted); font-size: 0.875rem;">
+                Access the admin dashboard to manage content
+            </p>
+        </div>
     </div>
 </div>
+
+<style>
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 70vh;
+    padding: 2rem 1rem;
+}
+
+.login-form {
+    background: var(--card-bg);
+    padding: 2.5rem;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.login-form h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--text-primary);
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.login-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.login-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.login-form input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.login-form input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(0, 149, 246, 0.1);
+    background: var(--card-bg);
+}
+
+.login-form input::placeholder {
+    color: var(--text-muted);
+}
+
+.login-form .alert {
+    margin-bottom: 1.5rem;
+    padding: 0.875rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 480px) {
+    .login-form {
+        padding: 2rem 1.5rem;
+        margin: 1rem;
+    }
+    
+    .login-form h2 {
+        font-size: 1.5rem;
+    }
+}
+</style>
 {% endblock %}

@@ -56,14 +56,13 @@ def manage_categories():
 def new_category():
     if request.method == 'POST':
         name = request.form.get('name')
-        display_order = request.form.get('display_order', type=int)
         
         if not name:
             flash('Category name is required', 'error')
             return render_template('admin/edit_category.html')
         
         category_model = CategoryModel()
-        category_id = category_model.create(name, display_order)
+        category_id = category_model.create(name)  # Let the model handle display_order automatically
         
         if category_id:
             flash('Category created successfully!', 'success')
@@ -86,9 +85,13 @@ def edit_category(category_id):
     
     if request.method == 'POST':
         name = request.form.get('name')
-        display_order = request.form.get('display_order', 0, type=int)
         
-        if category_model.update(category_id, name, display_order):
+        if not name:
+            flash('Category name is required', 'error')
+            return render_template('admin/edit_category.html', category=category)
+        
+        # Keep the current display_order - don't allow changing it here
+        if category_model.update(category_id, name, category.display_order):
             flash('Category updated successfully!', 'success')
             return redirect(url_for('admin.manage_categories'))
         else:

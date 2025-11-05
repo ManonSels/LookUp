@@ -8,7 +8,7 @@ function initializeSectionsManagement() {
         return;
     }
 
-    // Section drag & drop
+    // Section drag & drop - PREVENT nesting
     const sectionsList = document.getElementById('sections-list');
     if (sectionsList) {
         const sectionSortable = Sortable.create(sectionsList, {
@@ -16,7 +16,16 @@ function initializeSectionsManagement() {
             animation: 150,
             ghostClass: 'sortable-ghost',
             chosenClass: 'sortable-chosen',
+            // CRITICAL: Prevent sections from being dropped into other sections
+            filter: '.items-list, .items-grid, .item-card',
+            preventOnFilter: false,
             onEnd: function(evt) {
+                // If item was dropped into a section (not between sections), revert
+                if (evt.to !== sectionsList) {
+                    sectionSortable.sort(Array.from(sectionsList.children).map(child => child.getAttribute('data-section-id')));
+                    return;
+                }
+                
                 const sectionIds = Array.from(sectionsList.querySelectorAll('.section-card'))
                     .map(card => card.getAttribute('data-section-id'));
                 
@@ -45,25 +54,32 @@ function initializeSectionsManagement() {
         });
     }
 
-    // Item drag & drop for each section
+    // Item drag & drop for each section - FIXED for grid layout
     document.querySelectorAll('[id^="items-list-"]').forEach(itemsList => {
         const sectionId = itemsList.id.replace('items-list-', '');
         
-        const itemSortable = Sortable.create(itemsList, {
-            group: {
-                name: 'items',
-                pull: true,
-                put: true
-            },
+        // Find the items-grid inside this section
+        const itemsGrid = itemsList.querySelector('.items-grid');
+        if (!itemsGrid) return;
+        
+        const itemSortable = Sortable.create(itemsGrid, {
+            group: 'items', // Allow dragging between all sections
             handle: '.item-handle .handle-icon',
             animation: 150,
             ghostClass: 'sortable-ghost',
             chosenClass: 'sortable-chosen',
-            filter: '[data-no-drag]',
+            draggable: '.item-card',
             onEnd: function(evt) {
-                const fromSectionId = evt.from.getAttribute('data-section-id');
-                const toSectionId = evt.to.getAttribute('data-section-id');
+                const fromContainer = evt.from.closest('[id^="items-list-"]');
+                const toContainer = evt.to.closest('[id^="items-list-"]');
+                
+                if (!fromContainer || !toContainer) return;
+                
+                const fromSectionId = fromContainer.id.replace('items-list-', '');
+                const toSectionId = toContainer.id.replace('items-list-', '');
                 const itemId = evt.item.getAttribute('data-item-id');
+                
+                console.log('Item moved:', {fromSectionId, toSectionId, itemId});
                 
                 // If item moved to a different section, update its section_id
                 if (fromSectionId !== toSectionId) {
@@ -76,14 +92,6 @@ function initializeSectionsManagement() {
                 // Update empty state visibility for both sections
                 updateEmptyState(fromSectionId);
                 updateEmptyState(toSectionId);
-            },
-            onAdd: function(evt) {
-                const toSectionId = evt.to.getAttribute('data-section-id');
-                updateEmptyState(toSectionId);
-            },
-            onRemove: function(evt) {
-                const fromSectionId = evt.from.getAttribute('data-section-id');
-                updateEmptyState(fromSectionId);
             }
         });
         
@@ -96,7 +104,10 @@ function initializeSectionsManagement() {
         const itemsList = document.getElementById(`items-list-${sectionId}`);
         if (!itemsList) return;
         
-        const itemCards = itemsList.querySelectorAll('.item-card');
+        const itemsGrid = itemsList.querySelector('.items-grid');
+        if (!itemsGrid) return;
+        
+        const itemCards = itemsGrid.querySelectorAll('.item-card');
         const emptyState = itemsList.querySelector('.empty-items');
         
         if (itemCards.length === 0) {
@@ -147,7 +158,12 @@ function initializeSectionsManagement() {
 
     function updateItemOrderInSection(sectionId) {
         const itemsList = document.getElementById(`items-list-${sectionId}`);
-        const itemIds = Array.from(itemsList.querySelectorAll('.item-card'))
+        if (!itemsList) return;
+        
+        const itemsGrid = itemsList.querySelector('.items-grid');
+        if (!itemsGrid) return;
+        
+        const itemIds = Array.from(itemsGrid.querySelectorAll('.item-card'))
             .map(card => card.getAttribute('data-item-id'));
         
         fetch("/admin/api/items/reorder", {

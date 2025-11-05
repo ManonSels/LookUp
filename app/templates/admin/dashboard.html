@@ -5,9 +5,12 @@
 {% block content %}
 <div class="admin-header">
     <h1>Admin Dashboard</h1>
-    <div>
+    <div class="admin-header-actions">
         <a href="{{ url_for('admin.manage_categories') }}" class="btn btn-primary">Edit Categories</a>
         <a href="{{ url_for('admin.new_topic') }}" class="btn btn-primary">New Topic</a>
+    </div>
+    <div class="admin-search">
+        <input type="text" placeholder="Search topics..." id="adminSearchInput">
     </div>
 </div>
 
@@ -16,7 +19,7 @@
     <div class="category-column" data-category-id="{{ category_id }}">
         <div class="category-header">
             <h2>{{ category_data.name }}</h2>
-            <span class="topic-count">{{ category_data.topics|length }} topics</span>
+            <span class="topic-count">{{ category_data.topics|length }} topic{{ 's' if category_data.topics|length != 1 }}</span>
         </div>
         
         <div class="topics-list" id="topics-list-{{ category_id }}">
@@ -59,6 +62,10 @@
     <div class="empty-state">
         <h2>No categories or topics yet</h2>
         <p>Create your first category and topic to get started!</p>
+        <div style="margin-top: 1rem;">
+            <a href="{{ url_for('admin.manage_categories') }}" class="btn btn-primary">Create Category</a>
+            <a href="{{ url_for('admin.new_topic') }}" class="btn btn-primary">Create Topic</a>
+        </div>
     </div>
     {% endfor %}
 </div>

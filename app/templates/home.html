@@ -8,9 +8,19 @@
     <p>Your go to place for organized information on various topics</p>
 </div>
 
+<!-- Simple Category Filters -->
+{% if categorized_topics and categorized_topics|length > 1 %}
+<div class="category-filters" id="categoryFilters">
+    <button class="filter-btn active" data-category="all">All</button>
+    {% for category_id, category_data in categorized_topics.items() %}
+    <button class="filter-btn" data-category="{{ category_id }}">{{ category_data.name }}</button>
+    {% endfor %}
+</div>
+{% endif %}
+
 {% if categorized_topics %}
 {% for category_id, category_data in categorized_topics.items() %}
-<section class="category-section">
+<section class="category-section" data-category-id="{{ category_id }}">
     <h2 class="category-header">{{ category_data.name }}</h2>
     <div class="topics-grid">
         {% for topic in category_data.topics %}
@@ -70,6 +80,34 @@
         });
     }
 
+    // Simple category filtering functionality
+    function initializeCategoryFilters() {
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const categorySections = document.querySelectorAll('.category-section');
+        
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Get selected category
+                const selectedCategory = this.dataset.category;
+                
+                // Show/hide category sections
+                categorySections.forEach(section => {
+                    if (selectedCategory === 'all' || section.dataset.categoryId === selectedCategory) {
+                        section.style.display = 'block';
+                    } else {
+                        section.style.display = 'none';
+                    }
+                });
+            });
+        });
+    }
+
     // Initial update
     updateLogosForTheme();
 
@@ -80,5 +118,8 @@
             setTimeout(updateLogosForTheme, 100);
         });
     }
+    
+    // Initialize category filters
+    document.addEventListener('DOMContentLoaded', initializeCategoryFilters);
 </script>
 {% endblock %}

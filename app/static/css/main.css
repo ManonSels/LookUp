@@ -5,3 +5,109 @@
 @import url('pages.css');
 @import url('search.css');
 @import url('utilities.css');
+
+/* Additional global styles */
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* Focus styles for accessibility */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+a:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+/* Selection styles */
+::selection {
+    background: var(--accent-color);
+    color: white;
+}
+
+::-moz-selection {
+    background: var(--accent-color);
+    color: white;
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-color);
+}
+
+/* Print styles */
+@media print {
+    * {
+        background: transparent !important;
+        color: black !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+    
+    a, a:visited {
+        text-decoration: underline;
+    }
+    
+    a[href]:after {
+        content: " (" attr(href) ")";
+    }
+    
+    abbr[title]:after {
+        content: " (" attr(title) ")";
+    }
+    
+    .ir a:after,
+    a[href^="javascript:"]:after,
+    a[href^="#"]:after {
+        content: "";
+    }
+    
+    pre, blockquote {
+        border: 1px solid #999;
+        page-break-inside: avoid;
+    }
+    
+    thead {
+        display: table-header-group;
+    }
+    
+    tr, img {
+        page-break-inside: avoid;
+    }
+    
+    img {
+        max-width: 100% !important;
+    }
+    
+    @page {
+        margin: 0.5cm;
+    }
+    
+    p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+    }
+    
+    h2, h3 {
+        page-break-after: avoid;
+    }
+}

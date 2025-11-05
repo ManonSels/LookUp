@@ -18,11 +18,53 @@ function updateAdminTopicColors() {
     });
 }
 
+function initializeAdminSearch() {
+    const searchInput = document.getElementById('adminSearchInput');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            
+            document.querySelectorAll('.topic-card.admin').forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const description = card.querySelector('p').textContent.toLowerCase();
+                const slug = card.querySelector('.slug').textContent.toLowerCase();
+                
+                const matches = title.includes(searchTerm) || 
+                               description.includes(searchTerm) || 
+                               slug.includes(searchTerm);
+                
+                card.style.display = matches ? 'flex' : 'none';
+            });
+            
+            // Update category counts and visibility
+            updateCategoryCounts();
+            updateCategoryVisibility();
+        });
+    }
+}
+
+function updateCategoryVisibility() {
+    document.querySelectorAll('.category-column').forEach(column => {
+        const categoryId = column.getAttribute('data-category-id');
+        const topicList = column.querySelector('.topics-list');
+        // Only count visible topic cards
+        const visibleTopics = topicList.querySelectorAll('.topic-card.admin[style*="display: flex"], .topic-card.admin:not([style*="display: none"])').length;
+        
+        // Hide empty categories when searching
+        const isEmpty = visibleTopics === 0;
+        column.style.display = isEmpty ? 'none' : 'block';
+    });
+}
+
 function initializeDashboardDragDrop() {
     console.log('Initializing drag and drop...');
     
     // Initial color update
     updateAdminTopicColors();
+    
+    // Initialize admin search
+    initializeAdminSearch();
     
     // Update when theme changes
     const themeToggle = document.getElementById('themeToggle');
@@ -179,7 +221,8 @@ function initializeDashboardDragDrop() {
         document.querySelectorAll('.category-column').forEach(column => {
             const categoryId = column.getAttribute('data-category-id');
             const topicList = column.querySelector('.topics-list');
-            const topicCount = topicList.querySelectorAll('.topic-card').length;
+            // Only count visible topic cards (for search filtering)
+            const topicCount = topicList.querySelectorAll('.topic-card.admin[style*="display: flex"], .topic-card.admin:not([style*="display: none"])').length;
             const countElement = column.querySelector('.topic-count');
             
             if (countElement) {
@@ -202,6 +245,9 @@ function initializeDashboardDragDrop() {
             }, 3000);
         }
     }
+    
+    // Initial category count update
+    updateCategoryCounts();
     
     console.log('Drag and drop initialized successfully');
 }
