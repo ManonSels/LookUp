@@ -137,8 +137,8 @@
 
 .footer-recent h4 {
     color: var(--text-primary);
-    margin-bottom: 0.75rem;
-    font-size: 1rem;
+    margin-bottom: 1rem; /* Increased from 0.75rem */
+    font-size: 1.1rem; /* Increased from 1rem */
     font-weight: 600;
 }
 
@@ -146,44 +146,48 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto auto;
-    gap: 0.5rem;
+    gap: 0.75rem; /* Increased from 0.5rem */
+    flex-grow: 1; /* Allow grid to grow */
 }
 
 .recent-topic-card {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 0.5rem;
+    padding: 0.75rem; /* Increased from 0.5rem */
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-radius: 6px;
+    border-radius: 8px; /* Increased from 6px */
     text-decoration: none;
     color: var(--text-primary);
     transition: all 0.2s;
-    min-height: 50px;
-    font-size: 0.85rem;
+    min-height: 65px; /* Increased from 50px */
+    font-size: 0.9rem; /* Increased from 0.85rem */
+    flex-grow: 1; /* Allow cards to grow */
 }
 
 .recent-topic-card:hover {
     background: var(--card-bg);
     border-color: var(--accent-color);
-    transform: translateY(-1px);
+    transform: translateY(-2px); /* Increased from -1px */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .topic-title {
     font-weight: 500;
-    font-size: 0.8rem;
-    line-height: 1.2;
+    font-size: 0.9rem; /* Increased from 0.8rem */
+    line-height: 1.3; /* Increased from 1.2 */
     color: var(--text-primary);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.3rem; /* Increased from 0.2rem */
+    flex-grow: 1; /* Allow title to take available space */
 }
 
 .topic-date {
-    font-size: 0.7rem;
+    font-size: 0.8rem; /* Increased from 0.7rem */
     color: var(--text-muted);
     align-self: flex-end;
 }
@@ -191,13 +195,17 @@
 .no-recent-topics {
     grid-column: 1 / -1;
     text-align: center;
-    padding: 0.75rem;
+    padding: 1.25rem; /* Increased from 0.75rem */
     color: var(--text-muted);
     font-style: italic;
     background: var(--bg-secondary);
-    border-radius: 6px;
+    border-radius: 8px; /* Increased from 6px */
     border: 1px dashed var(--border-color);
-    font-size: 0.85rem;
+    font-size: 0.9rem; /* Increased from 0.85rem */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 65px; /* Match card height */
 }
 
 .footer-bottom {
@@ -266,14 +274,13 @@ body.admin-page .main-content {
     }
     
     .footer {
-        padding: 1.5rem 0 1rem 0;
+        padding: 2rem 0 1.5rem 0; /* Increased padding */
     }
     
     .footer-container {
         grid-template-columns: 1fr;
-        gap: 1.5rem;
-        padding: 0 1rem;
-        text-align: center;
+        gap: 2rem; /* Increased from 1.5rem */
+        padding: 0 1.5rem; /* Increased padding */
     }
     
     .footer-brand {
@@ -282,54 +289,87 @@ body.admin-page .main-content {
     
     .footer-brand p {
         max-width: none;
+        font-size: 1rem; /* Slightly larger text */
     }
     
     .recent-topics-grid {
-        max-width: 300px;
-        margin: 0 auto;
+        max-width: 100%; /* Remove max-width constraint */
+        margin: 0;
+        gap: 1rem; /* Larger gap on mobile */
+    }
+    
+    .recent-topic-card {
+        min-height: 70px; /* Even taller on mobile */
+        padding: 1rem; /* More padding on mobile */
+    }
+    
+    .topic-title {
+        font-size: 0.95rem; /* Larger text on mobile */
+        line-height: 1.4;
+    }
+    
+    .topic-date {
+        font-size: 0.85rem; /* Larger date on mobile */
     }
     
     .footer-bottom {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-        padding: 1rem 1rem 0 1rem;
+        padding: 1.5rem 1.5rem 0 1.5rem; /* Increased padding */
+        margin-top: 2rem; /* More space above */
     }
     
-    .footer-social {
-        justify-content: center;
+    .footer-recent h4 {
+        font-size: 1.2rem; /* Larger heading on mobile */
+        margin-bottom: 1.25rem;
     }
 }
 
 @media (max-width: 480px) {
     .footer {
-        padding: 1rem 0 0.75rem 0;
+        padding: 2.5rem 0 2rem 0; /* Even more padding */
     }
     
     .footer-container {
-        padding: 0 0.75rem;
-        gap: 1rem;
+        padding: 0 1.25rem;
+        gap: 2.5rem; /* More space between sections */
     }
     
-    .footer-bottom {
-        padding: 0.75rem 0.75rem 0 0.75rem;
+    .recent-topics-grid {
+        gap: 0.875rem;
     }
     
     .recent-topic-card {
-        min-height: 45px;
-        padding: 0.4rem;
+        min-height: 75px; /* Tallest on smallest screens */
+        padding: 0.875rem;
     }
     
     .topic-title {
-        font-size: 0.75rem;
+        font-size: 0.92rem;
+        -webkit-line-clamp: 2; /* Ensure 2 lines */
     }
     
     .topic-date {
-        font-size: 0.65rem;
+        font-size: 0.82rem;
+    }
+    
+    .no-recent-topics {
+        padding: 1.5rem;
+        min-height: 75px;
+        font-size: 0.95rem;
     }
     
     .footer-recent h4 {
-        font-size: 0.95rem;
-        margin-bottom: 0.5rem;
+        font-size: 1.15rem;
+        margin-bottom: 1.5rem;
     }
+}
+
+/* Add this for better visual hierarchy */
+.footer-brand h3 {
+    font-size: 1.5rem; /* Slightly larger logo */
+    margin-bottom: 1rem;
+}
+
+.footer-about h4 {
+    font-size: 1rem; /* Slightly larger about heading */
+    margin-bottom: 0.75rem;
 }

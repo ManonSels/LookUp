@@ -18,4 +18,4 @@ with app.app_context():
         print(f"Error during database initialization: {e}")
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
