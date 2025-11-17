@@ -10,12 +10,23 @@ def get_all_topics():
     """Get ALL topics (including unpublished) for the admin search sidebar"""
     try:
         topic_model = TopicModel()
-        all_topics = topic_model.get_all()
+        # Get only published topics for the search sidebar
+        all_topics = topic_model.get_all_published()  # Changed from get_all()
         
+        # Rest of the categorization logic...
         categorized_topics = {}
         for topic in all_topics:
-            category_id = topic.category_id
-            category_name = topic.category_name if hasattr(topic, 'category_name') else 'Uncategorized'
+            # Since topics can have multiple categories, we need to handle this differently
+            categories = topic_model.get_categories_for_topic(topic.id)
+            
+            if categories:
+                # Use the first category for grouping in sidebar
+                category = categories[0]
+                category_id = category.id
+                category_name = category.name
+            else:
+                category_id = 'uncategorized'
+                category_name = 'Uncategorized'
             
             if category_id not in categorized_topics:
                 categorized_topics[category_id] = {

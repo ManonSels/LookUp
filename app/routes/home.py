@@ -2,12 +2,12 @@ from flask import Blueprint, render_template, current_app
 from app.models.topic import TopicModel
 from app.models.section import SectionModel
 from app.models.section_item import SectionItemModel
-from app.models.category import CategoryModel
+from datetime import datetime
 
 bp = Blueprint('home', __name__)
 
 def get_footer_data():
-    """Helper function to get data for footer (recent and most viewed topics)"""
+    """function to get data for footer (recent and most viewed topics)"""
     try:
         topic_model = TopicModel()
         all_topics = topic_model.get_all()
@@ -15,7 +15,7 @@ def get_footer_data():
         def get_updated_at(topic):
             updated_at = getattr(topic, 'updated_at', None)
             if not updated_at:
-                return getattr(topic, 'created_at', '2000-01-01')
+                return getattr(topic, 'created_at', datetime.now())
             return updated_at
         
         recent_topics = sorted(all_topics, key=get_updated_at, reverse=True)[:4]
@@ -29,7 +29,6 @@ def get_footer_data():
 @bp.route('/')
 def index():
     try:
-        category_model = CategoryModel()
         topic_model = TopicModel()
         categorized_topics = topic_model.get_all_grouped_by_category()
         
@@ -39,6 +38,7 @@ def index():
                             categorized_topics=categorized_topics,
                             recent_topics=recent_topics,
                             most_viewed_topics=most_viewed_topics)
+    
     except Exception as e:
         current_app.logger.error(f"Error in home route: {e}")
         recent_topics, most_viewed_topics = get_footer_data()

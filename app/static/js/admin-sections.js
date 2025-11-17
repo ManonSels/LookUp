@@ -40,19 +40,22 @@ function initializeSectionsManagement() {
                 .then(response => response.json())
                 .then(data => {
                     if (!data.success) {
-                        alert('Error reordering sections: ' + (data.error || 'Unknown error'));
+                        console.error('Error reordering sections:', data.error);
+                        showFlashMessage('Error reordering sections: ' + (data.error || 'Unknown error'), 'error');
                         sectionSortable.sort(sectionIds);
+                    } else {
+                        showFlashMessage('Sections reordered successfully!', 'success');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error reordering sections. Please check the console.');
+                    showFlashMessage('Error reordering sections. Please check the console.', 'error');
                 });
             }
         });
     }
 
-    // Item drag & drop for each section
+    // Item drag & drop for each section - FIXED CROSS-SECTION DRAGGING
     document.querySelectorAll('[id^="items-list-"]').forEach(itemsList => {
         const sectionId = itemsList.id.replace('items-list-', '');
         
@@ -60,30 +63,42 @@ function initializeSectionsManagement() {
         if (!itemsGrid) return;
         
         const itemSortable = Sortable.create(itemsGrid, {
-            group: 'items',
+            group: 'shared-items', // Same group name for ALL sections
             handle: '.item-handle .handle-icon',
             animation: 150,
             ghostClass: 'sortable-ghost',
             chosenClass: 'sortable-chosen',
             draggable: '.item-card',
-            onEnd: function(evt) {
-                const fromContainer = evt.from.closest('[id^="items-list-"]');
-                const toContainer = evt.to.closest('[id^="items-list-"]');
-                
-                if (!fromContainer || !toContainer) return;
-                
-                const fromSectionId = fromContainer.id.replace('items-list-', '');
-                const toSectionId = toContainer.id.replace('items-list-', '');
+            onAdd: function(evt) {
+                // when an item is added to a new list
+                const fromSectionId = evt.from.closest('[id^="items-list-"]').id.replace('items-list-', '');
+                const toSectionId = evt.to.closest('[id^="items-list-"]').id.replace('items-list-', '');
                 const itemId = evt.item.getAttribute('data-item-id');
+                
+                console.log('Item added to new section:', { itemId, fromSectionId, toSectionId });
                 
                 if (fromSectionId !== toSectionId) {
                     updateItemSection(itemId, toSectionId, fromSectionId);
-                } else {
-                    updateItemOrderInSection(toSectionId);
                 }
+            },
+            onUpdate: function(evt) {
+                // when items are reordered within the same list
+                const sectionId = evt.to.closest('[id^="items-list-"]').id.replace('items-list-', '');
+                console.log('Items reordered in section:', sectionId);
+                updateItemOrderInSection(sectionId);
+            },
+            onEnd: function(evt) {
+                // Cleanup and update empty states
+                const fromContainer = evt.from.closest('[id^="items-list-"]');
+                const toContainer = evt.to.closest('[id^="items-list-"]');
                 
-                updateEmptyState(fromSectionId);
-                updateEmptyState(toSectionId);
+                if (fromContainer && toContainer) {
+                    const fromSectionId = fromContainer.id.replace('items-list-', '');
+                    const toSectionId = toContainer.id.replace('items-list-', '');
+                    
+                    updateEmptyState(fromSectionId);
+                    updateEmptyState(toSectionId);
+                }
             }
         });
         
@@ -118,6 +133,8 @@ function initializeSectionsManagement() {
     }
 
     function updateItemSection(itemId, newSectionId, oldSectionId) {
+        console.log('Updating item section:', { itemId, newSectionId, oldSectionId });
+        
         fetch("/admin/api/items/change_section", {
             method: 'POST',
             headers: {
@@ -128,18 +145,41 @@ function initializeSectionsManagement() {
                 section_id: parseInt(newSectionId)
             })
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                throw new Error('Network response was not ok: ' + response.status);
+            }
+            return response.json();
+        })
         .then(data => {
-            if (!data.success) {
-                alert('Error moving item: ' + (data.error || 'Unknown error'));
-            } else {
+            console.log('Server response:', data);
+            if (data.success) {
+                console.log('Item section updated successfully');
                 updateItemOrderInSection(newSectionId);
+                showFlashMessage('Item moved to new section!', 'success');
+            } else {
+                throw new Error(data.error || 'Unknown server error');
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('Error moving item. Please check the console.');
+            console.error('Error moving item:', error);
+            showFlashMessage('Error moving item: ' + error.message, 'error');
+            // Revert the UI change on error
+            revertItemToSection(itemId, oldSectionId);
         });
+    }
+
+    function revertItemToSection(itemId, sectionId) {
+        const itemCard = document.querySelector(`[data-item-id="${itemId}"]`);
+        const targetList = document.getElementById(`items-list-${sectionId}`);
+        const targetGrid = targetList ? targetList.querySelector('.items-grid') : null;
+        
+        if (itemCard && targetGrid) {
+            itemCard.remove();
+            targetGrid.appendChild(itemCard);
+            updateEmptyState(sectionId);
+        }
     }
 
     function updateItemOrderInSection(sectionId) {
@@ -152,24 +192,36 @@ function initializeSectionsManagement() {
         const itemIds = Array.from(itemsGrid.querySelectorAll('.item-card'))
             .map(card => card.getAttribute('data-item-id'));
         
+        console.log('Updating item order for section:', sectionId, itemIds);
+        
+        // Create form data instead of JSON
+        const formData = new FormData();
+        formData.append('section_id', sectionId);
+        itemIds.forEach((id, index) => {
+            formData.append('order[]', id);
+        });
+        
         fetch("/admin/api/items/reorder", {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                section_id: parseInt(sectionId),
-                order: itemIds
-            })
+            body: formData
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
             if (!data.success) {
                 console.error('Error updating item order:', data.error);
+                showFlashMessage('Error updating item order: ' + data.error, 'error');
+            } else {
+                console.log('Item order updated successfully');
             }
         })
         .catch(error => {
             console.error('Error:', error);
+            showFlashMessage('Error updating item order. Please check the console.', 'error');
         });
     }
 
@@ -249,14 +301,14 @@ function initializeSectionsManagement() {
                 .then(function (data) {
                     if (data.success) {
                         sectionCard.querySelector('h3').textContent = newTitle.trim();
-                        alert('Section updated successfully!');
+                        showFlashMessage('Section updated successfully!', 'success');
                     } else {
-                        alert('Error updating section: ' + (data.error || 'Unknown error'));
+                        showFlashMessage('Error updating section: ' + (data.error || 'Unknown error'), 'error');
                     }
                 })
                 .catch(function (error) {
                     console.error('Error:', error);
-                    alert('Error updating section. Please check the console for details.');
+                    showFlashMessage('Error updating section. Please check the console for details.', 'error');
                 });
             }
         });
@@ -301,18 +353,46 @@ function initializeSectionsManagement() {
                             `;
                         }
 
-                        alert('Section deleted successfully!');
+                        showFlashMessage('Section deleted successfully!', 'success');
                     } else {
-                        alert('Error deleting section: ' + (data.error || 'Unknown error'));
+                        showFlashMessage('Error deleting section: ' + (data.error || 'Unknown error'), 'error');
                     }
                 })
                 .catch(function (error) {
                     console.error('Error:', error);
-                    alert('Error deleting section. Please check the console for details.');
+                    showFlashMessage('Error deleting section. Please check the console for details.', 'error');
                 });
             }
         });
     });
+    
+    // Flash message utility
+    function showFlashMessage(message, type) {
+        // Remove any existing flash messages
+        const existingFlash = document.querySelector('.flash-message');
+        if (existingFlash) {
+            existingFlash.remove();
+        }
+        
+        const flashDiv = document.createElement('div');
+        flashDiv.className = `alert alert-${type} flash-message`;
+        flashDiv.textContent = message;
+        flashDiv.style.cssText = `
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            z-index: 10000;
+            max-width: 300px;
+        `;
+        
+        document.body.appendChild(flashDiv);
+        
+        setTimeout(() => {
+            if (flashDiv.parentElement) {
+                flashDiv.remove();
+            }
+        }, 3000);
+    }
 }
 
 // Initialize when DOM is loaded

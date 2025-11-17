@@ -217,17 +217,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (colorInputLight && colorPreviewLight) {
         colorInputLight.addEventListener('input', function() {
             colorPreviewLight.textContent = this.value;
-            colorPreviewLight.style.backgroundColor = this.value;
         });
-        colorPreviewLight.style.backgroundColor = colorInputLight.value;
     }
     
     if (colorInputDark && colorPreviewDark) {
         colorInputDark.addEventListener('input', function() {
             colorPreviewDark.textContent = this.value;
-            colorPreviewDark.style.backgroundColor = this.value;
         });
-        colorPreviewDark.style.backgroundColor = colorInputDark.value;
     }
 
     // Remove logo functionality for both themes

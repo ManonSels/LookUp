@@ -137,8 +137,8 @@
 
 .footer-recent h4 {
     color: var(--text-primary);
-    margin-bottom: 1rem; /* Increased from 0.75rem */
-    font-size: 1.1rem; /* Increased from 1rem */
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
     font-weight: 600;
 }
 
@@ -146,48 +146,48 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto auto;
-    gap: 0.75rem; /* Increased from 0.5rem */
-    flex-grow: 1; /* Allow grid to grow */
+    gap: 0.75rem;
+    flex-grow: 1;
 }
 
 .recent-topic-card {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 0.75rem; /* Increased from 0.5rem */
+    padding: 0.75rem;
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-radius: 8px; /* Increased from 6px */
+    border-radius: 8px;
     text-decoration: none;
     color: var(--text-primary);
     transition: all 0.2s;
-    min-height: 65px; /* Increased from 50px */
-    font-size: 0.9rem; /* Increased from 0.85rem */
-    flex-grow: 1; /* Allow cards to grow */
+    min-height: 65px;
+    font-size: 0.9rem;
+    flex-grow: 1;
 }
 
 .recent-topic-card:hover {
     background: var(--card-bg);
     border-color: var(--accent-color);
-    transform: translateY(-2px); /* Increased from -1px */
+    transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .topic-title {
     font-weight: 500;
-    font-size: 0.9rem; /* Increased from 0.8rem */
-    line-height: 1.3; /* Increased from 1.2 */
+    font-size: 0.9rem;
+    line-height: 1.3;
     color: var(--text-primary);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    margin-bottom: 0.3rem; /* Increased from 0.2rem */
-    flex-grow: 1; /* Allow title to take available space */
+    margin-bottom: 0.3rem;
+    flex-grow: 1;
 }
 
 .topic-date {
-    font-size: 0.8rem; /* Increased from 0.7rem */
+    font-size: 0.8rem;
     color: var(--text-muted);
     align-self: flex-end;
 }
@@ -195,17 +195,17 @@
 .no-recent-topics {
     grid-column: 1 / -1;
     text-align: center;
-    padding: 1.25rem; /* Increased from 0.75rem */
+    padding: 1.25rem;
     color: var(--text-muted);
     font-style: italic;
     background: var(--bg-secondary);
-    border-radius: 8px; /* Increased from 6px */
+    border-radius: 8px;
     border: 1px dashed var(--border-color);
-    font-size: 0.9rem; /* Increased from 0.85rem */
+    font-size: 0.9rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 65px; /* Match card height */
+    min-height: 65px;
 }
 
 .footer-bottom {
@@ -274,13 +274,13 @@ body.admin-page .main-content {
     }
     
     .footer {
-        padding: 2rem 0 1.5rem 0; /* Increased padding */
+        padding: 2rem 0 1.5rem 0;
     }
     
     .footer-container {
         grid-template-columns: 1fr;
-        gap: 2rem; /* Increased from 1.5rem */
-        padding: 0 1.5rem; /* Increased padding */
+        gap: 2rem;
+        padding: 0 1.5rem;
     }
     
     .footer-brand {
@@ -289,48 +289,48 @@ body.admin-page .main-content {
     
     .footer-brand p {
         max-width: none;
-        font-size: 1rem; /* Slightly larger text */
+        font-size: 1rem;
     }
     
     .recent-topics-grid {
-        max-width: 100%; /* Remove max-width constraint */
+        max-width: 100%;
         margin: 0;
-        gap: 1rem; /* Larger gap on mobile */
+        gap: 1rem;
     }
     
     .recent-topic-card {
-        min-height: 70px; /* Even taller on mobile */
-        padding: 1rem; /* More padding on mobile */
+        min-height: 70px;
+        padding: 1rem;
     }
     
     .topic-title {
-        font-size: 0.95rem; /* Larger text on mobile */
+        font-size: 0.95rem;
         line-height: 1.4;
     }
     
     .topic-date {
-        font-size: 0.85rem; /* Larger date on mobile */
+        font-size: 0.85rem;
     }
     
     .footer-bottom {
-        padding: 1.5rem 1.5rem 0 1.5rem; /* Increased padding */
-        margin-top: 2rem; /* More space above */
+        padding: 1.5rem 1.5rem 0 1.5rem; 
+        margin-top: 2rem;
     }
     
     .footer-recent h4 {
-        font-size: 1.2rem; /* Larger heading on mobile */
+        font-size: 1.2rem;
         margin-bottom: 1.25rem;
     }
 }
 
 @media (max-width: 480px) {
     .footer {
-        padding: 2.5rem 0 2rem 0; /* Even more padding */
+        padding: 2.5rem 0 2rem 0;
     }
     
     .footer-container {
         padding: 0 1.25rem;
-        gap: 2.5rem; /* More space between sections */
+        gap: 2.5rem;
     }
     
     .recent-topics-grid {
@@ -338,13 +338,13 @@ body.admin-page .main-content {
     }
     
     .recent-topic-card {
-        min-height: 75px; /* Tallest on smallest screens */
+        min-height: 75px;
         padding: 0.875rem;
     }
     
     .topic-title {
         font-size: 0.92rem;
-        -webkit-line-clamp: 2; /* Ensure 2 lines */
+        -webkit-line-clamp: 2;
     }
     
     .topic-date {
@@ -363,13 +363,12 @@ body.admin-page .main-content {
     }
 }
 
-/* Add this for better visual hierarchy */
 .footer-brand h3 {
-    font-size: 1.5rem; /* Slightly larger logo */
+    font-size: 1.5rem;
     margin-bottom: 1rem;
 }
 
 .footer-about h4 {
-    font-size: 1rem; /* Slightly larger about heading */
+    font-size: 1rem;
     margin-bottom: 0.75rem;
 }
